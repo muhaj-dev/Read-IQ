@@ -3,13 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import { fonts } from '@/constants/typography';
 import { useTheme } from '@/hooks/use-theme';
 import { parseAnswer, type Leaf } from '@/lib/answer-blocks';
-import { withAlpha } from '@/lib/color';
 
 // Renders noteIQ's answer from the parsed block structure (see lib/answer-blocks):
-// short paragraphs, "- " bullets, "1." numbered steps, "**Label:**" section cards,
-// and inline **bold** key terms. A section is drawn as a bordered inner card
-// (accent title + body) so a multi-part answer reads like the mock — intro
-// paragraph, one card per section, optional closing paragraph.
+// clear paragraphs, "**Heading:**" bold headings, "- " bullets, "1." numbered
+// steps, and inline **bold** key terms — a calm, readable study answer.
 
 /** Render a line's inline **bold** spans, leaving the rest as plain text. */
 function Inline({ text }: { text: string }) {
@@ -28,14 +25,13 @@ function Inline({ text }: { text: string }) {
   );
 }
 
-/** Render one leaf (paragraph, bullet list, or numbered list). Shared by the
- *  top-level body and each section card so they format identically. */
-function LeafBlock({ block, textColor }: { block: Leaf; textColor: string }) {
+/** Render one leaf (paragraph, bullet list, or numbered list). */
+function LeafBlock({ block }: { block: Leaf }) {
   const colors = useTheme();
 
   if (block.kind === 'para') {
     return (
-      <Text style={[styles.text, { color: textColor }]}>
+      <Text style={[styles.text, { color: colors.onSurface }]}>
         <Inline text={block.text} />
       </Text>
     );
@@ -48,7 +44,7 @@ function LeafBlock({ block, textColor }: { block: Leaf; textColor: string }) {
           <Text style={[styles.marker, { color: colors.primary }]}>
             {block.kind === 'ordered' ? `${j + 1}.` : '•'}
           </Text>
-          <Text style={[styles.text, styles.item, { color: textColor }]}>
+          <Text style={[styles.text, styles.item, { color: colors.onSurface }]}>
             <Inline text={item} />
           </Text>
         </View>
@@ -67,27 +63,6 @@ export function AnswerBody({ text }: Props) {
   return (
     <View className="gap-2.5">
       {blocks.map((block, i) => {
-        if (block.kind === 'section') {
-          return (
-            <View
-              key={i}
-              className="gap-1.5 rounded-inner p-3"
-              style={{
-                backgroundColor: colors.surfaceLow,
-                borderWidth: 1,
-                borderColor: withAlpha(colors.outlineVariant, 0.6),
-              }}>
-              <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-                <Inline text={block.title} />
-              </Text>
-              {block.body.map((leaf, j) => (
-                <LeafBlock key={j} block={leaf} textColor={colors.onSurfaceVariant} />
-              ))}
-            </View>
-          );
-        }
-
-        // A bare label with no body of its own — render it as a plain bold heading.
         if (block.kind === 'label') {
           return (
             <Text key={i} style={[styles.label, { color: colors.onSurface }]}>
@@ -96,7 +71,23 @@ export function AnswerBody({ text }: Props) {
           );
         }
 
-        return <LeafBlock key={i} block={block} textColor={colors.onSurface} />;
+        // A term + its definition → a highlighted card so the student sees the
+        // definition of each part up front, with explanation below (see mock).
+        if (block.kind === 'definition') {
+          return (
+            <View
+              key={i}
+              className="gap-1 rounded-inner border p-3"
+              style={{ backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }}>
+              <Text style={[styles.term, { color: colors.primary }]}>
+                <Inline text={block.term} />
+              </Text>
+              <LeafBlock block={block.body} />
+            </View>
+          );
+        }
+
+        return <LeafBlock key={i} block={block} />;
       })}
     </View>
   );
@@ -109,7 +100,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyRegular,
   },
   item: {
-    flex: 1,
+    // flexShrink (not flex:1) so the text still reports its full intrinsic width.
+    // The chat bubble is shrink-to-fit; flex:1 (flex-basis 0) would collapse it to
+    // the bullet marker's width and wrap the text one character per line.
+    flexShrink: 1,
   },
   marker: {
     fontSize: 15,
@@ -122,9 +116,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontFamily: fonts.bodyBold,
   },
-  sectionTitle: {
-    fontSize: 14,
-    lineHeight: 20,
+  term: {
+    fontSize: 15,
+    lineHeight: 21,
     fontFamily: fonts.bodyBold,
   },
   bold: {

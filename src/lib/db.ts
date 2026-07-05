@@ -5,6 +5,7 @@ import * as SQLite from 'expo-sqlite';
 
 import type { ChatMessage, ChatSession, Citation, Role } from '@/types/chat';
 import type { Note, NoteAttachment, NoteComment, NoteSource } from '@/types/note';
+import type { PodcastCoverage, PodcastEpisode, PodcastTurn } from '@/types/podcast';
 
 const DB_NAME = 'noteiq.db';
 
@@ -41,6 +42,14 @@ const SCHEMA = `
     citations  TEXT NOT NULL DEFAULT '[]',
     error      INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS podcast_episodes (
+    note_id      TEXT PRIMARY KEY NOT NULL,
+    content_hash TEXT NOT NULL,
+    title        TEXT NOT NULL,
+    coverage     TEXT NOT NULL,
+    turns        TEXT NOT NULL,
+    created_at   TEXT NOT NULL
   );
 `;
 
@@ -207,6 +216,8 @@ export async function updateNote(
 export async function deleteNote(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM notes WHERE id = ?', id);
+  // A note's cached podcast episode is meaningless once the note is gone.
+  await db.runAsync('DELETE FROM podcast_episodes WHERE note_id = ?', id);
 }
 
 /** Custom subjects/courses the student added, oldest first. */
@@ -336,9 +347,74 @@ export async function insertChatMessage(sessionId: string, message: ChatMessage)
   );
 }
 
+/** Overwrite one turn's text — used when "Generate more" appends a continuation
+ *  to a settled answer so the fuller text survives reopening the conversation. */
+export async function updateChatMessageContent(id: string, content: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE chat_messages SET content = ? WHERE id = ?', content, id);
+}
+
 /** Delete a conversation and all of its turns. */
 export async function deleteChatSession(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM chat_messages WHERE session_id = ?', id);
   await db.runAsync('DELETE FROM chat_sessions WHERE id = ?', id);
+}
+
+// ── Podcast episodes ("From Your Notes") ─────────────────────────────────────
+// One cached episode per note, keyed by note_id. `content_hash` fingerprints the
+// note text the script was written from, so the store can tell a fresh episode
+// from a stale one (the note changed) without re-reading the whole note.
+
+type EpisodeRow = {
+  note_id: string;
+  content_hash: string;
+  title: string;
+  coverage: string;
+  turns: string;
+  created_at: string;
+};
+
+function parseTurns(raw: string): PodcastTurn[] {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((t): t is PodcastTurn => !!t && typeof t.text === 'string')
+      .map((t) => ({ speaker: t.speaker === 'B' ? 'B' : 'A', text: t.text }));
+  } catch {
+    return [];
+  }
+}
+
+/** The note's cached episode, or null if none has been generated yet. */
+export async function getPodcastEpisode(noteId: string): Promise<PodcastEpisode | null> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<EpisodeRow>(
+    'SELECT * FROM podcast_episodes WHERE note_id = ?',
+    noteId,
+  );
+  if (!row) return null;
+  return {
+    noteId: row.note_id,
+    contentHash: row.content_hash,
+    title: row.title,
+    coverage: row.coverage as PodcastCoverage,
+    turns: parseTurns(row.turns),
+    createdAt: row.created_at,
+  };
+}
+
+/** Save (or replace) the note's episode — one per note, newest wins. */
+export async function savePodcastEpisode(episode: PodcastEpisode): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    'INSERT OR REPLACE INTO podcast_episodes (note_id, content_hash, title, coverage, turns, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    episode.noteId,
+    episode.contentHash,
+    episode.title,
+    episode.coverage,
+    JSON.stringify(episode.turns),
+    episode.createdAt,
+  );
 }

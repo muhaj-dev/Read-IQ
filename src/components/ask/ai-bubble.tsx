@@ -15,25 +15,39 @@ type Props = {
   streaming?: boolean;
   /** This bubble holds a friendly runtime-error message, not an answer. */
   error?: boolean;
+  /** This answer is from general knowledge, OUTSIDE the notes — show the distinct
+   *  "Beyond your notes" header instead of the trusted "noteIQ" label. */
+  beyond?: boolean;
 };
 
-/** Left-aligned card holding noteIQ's answer (streams in, or shows the fallback). */
-export function AiBubble({ text, time, streaming, error }: Props) {
+/** Left-aligned card holding noteIQ's answer (streams in, or shows the fallback).
+ *  A "beyond your notes" answer sits on a distinct blue well so it never reads as
+ *  the trusted "from your notes" reply above it. */
+export function AiBubble({ text, time, streaming, error, beyond }: Props) {
   const colors = useTheme();
   const waiting = streaming && text.length === 0;
 
   return (
     <View className="items-start">
-      <Text className="mb-1 ml-1" style={[styles.sender, { color: colors.primary }]}>
-        noteIQ
-      </Text>
+      {beyond ? (
+        <View className="mb-1 ml-1 flex-row items-center gap-1">
+          <AppIcon name="language" size={13} color={colors.topicBlueInk} />
+          <Text style={[styles.sender, { color: colors.topicBlueInk }]}>
+            Beyond your notes · general knowledge
+          </Text>
+        </View>
+      ) : (
+        <Text className="mb-1 ml-1" style={[styles.sender, { color: colors.primary }]}>
+          noteIQ
+        </Text>
+      )}
       <View
         className="max-w-[90%] gap-3 rounded-card p-4"
         style={[
           styles.bubble,
           {
-            backgroundColor: colors.surfaceLowest,
-            borderColor: colors.outlineVariant,
+            backgroundColor: beyond ? colors.topicBlueBg : colors.surfaceLowest,
+            borderColor: beyond ? colors.topicBlueBorder : colors.outlineVariant,
             shadowColor: colors.shadow,
           },
         ]}>

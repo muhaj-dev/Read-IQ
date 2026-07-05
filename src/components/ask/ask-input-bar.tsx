@@ -17,7 +17,7 @@ export function AskInputBar({ value, onChangeText, onSend }: Props) {
   return (
     <View className="px-5 pb-3 pt-2">
       <View
-        className="flex-row items-center gap-3 rounded-pill py-2 pl-5 pr-2"
+        className="flex-row items-end gap-3 rounded-pill py-2 pl-5 pr-2"
         style={[
           styles.pill,
           {
@@ -27,11 +27,13 @@ export function AskInputBar({ value, onChangeText, onSend }: Props) {
           },
         ]}>
         {/* TextInput doesn't take className (Style Exception Rule) → inline style. */}
+        {/* multiline + default return key → the keyboard shows Enter (newline),
+            not "send", so students can write freely. Tap the button to send. */}
         <TextInput
           value={value}
           onChangeText={onChangeText}
-          onSubmitEditing={onSend}
-          returnKeyType="send"
+          multiline
+          returnKeyType="default"
           placeholder="Ask a follow up..."
           placeholderTextColor={colors.outline}
           style={[styles.input, { color: colors.onSurface }]}
@@ -64,5 +66,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: fonts.bodyRegular,
     paddingVertical: 8,
+    maxHeight: 120,
+    textAlignVertical: 'top',
   },
 });

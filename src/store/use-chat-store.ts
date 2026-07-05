@@ -10,7 +10,7 @@
 import { create } from 'zustand';
 
 import { BtlError } from '@/lib/btl';
-import { askFromNotes } from '@/lib/chat';
+import { answerBeyondNotes, askFromNotes, continueAnswer } from '@/lib/chat';
 import {
   deleteChatSession,
   insertChatMessage,
@@ -18,6 +18,7 @@ import {
   listChatMessages,
   listChatSessions,
   touchChatSession,
+  updateChatMessageContent,
 } from '@/lib/db';
 import { useUserStore } from '@/store/use-user-store';
 import type { ChatMessage, ChatSession } from '@/types/chat';
@@ -50,6 +51,11 @@ type ChatState = {
   init: () => Promise<void>;
   /** Send a question and stream a grounded answer (persists the turn). */
   send: (question: string) => Promise<void>;
+  /** Continue a cut-off answer ("Generate more") — appends the extra text. */
+  generateMore: (messageId: string) => Promise<void>;
+  /** Opt-in: answer the same question from general knowledge, OUTSIDE the notes.
+   *  Adds a clearly-marked "Beyond your notes" reply (with References) below. */
+  answerBeyond: (messageId: string) => Promise<void>;
   /** Start a fresh, empty conversation (the current one stays saved). */
   newChat: () => void;
   /** Reopen a saved conversation from history. */
@@ -140,6 +146,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: result.content,
         grounded: result.grounded,
         citations: result.citations,
+        truncated: result.truncated,
         streaming: false,
         error: false,
       };
@@ -169,6 +176,118 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set({ sessions: await listChatSessions() });
     } catch {
       // A stale history list is harmless — it refreshes next time it opens.
+    }
+  },
+
+  generateMore: async (messageId) => {
+    const { messages, activeSessionId, sending } = get();
+    if (sending) return;
+    const idx = messages.findIndex((m) => m.id === messageId);
+    const answer = messages[idx];
+    // The first answer is a short briefing, so "Generate more" is offered under any
+    // grounded reply — continue unless the notes have already been exhausted.
+    if (!answer || answer.role !== 'assistant' || !answer.grounded || answer.exhausted) return;
+    // The question is the nearest preceding user turn.
+    const question = messages
+      .slice(0, idx)
+      .reverse()
+      .find((m) => m.role === 'user')?.content;
+    if (!question) return;
+
+    const patch = (fields: Partial<ChatMessage>) =>
+      set((s) => ({
+        messages: s.messages.map((m) => (m.id === messageId ? { ...m, ...fields } : m)),
+      }));
+
+    set({ sending: true });
+    patch({ continuing: true });
+    try {
+      // Buffered (not streamed live): the model may reply with the "nothing more"
+      // marker, which we must discard rather than flash on screen.
+      const result = await continueAnswer(question, answer.content);
+      const merged =
+        result.exhausted || !result.content
+          ? { continuing: false, exhausted: true }
+          : {
+              content: `${answer.content}\n\n${result.content}`,
+              truncated: result.truncated,
+              continuing: false,
+            };
+      patch(merged);
+      if (merged.content && activeSessionId) {
+        void updateChatMessageContent(messageId, merged.content);
+      }
+    } catch {
+      // Leave the answer intact; just drop the spinner and keep "Generate more".
+      patch({ continuing: false });
+    } finally {
+      set({ sending: false });
+    }
+  },
+
+  answerBeyond: async (messageId) => {
+    const { messages, activeSessionId, sending } = get();
+    if (sending) return;
+    const idx = messages.findIndex((m) => m.id === messageId);
+    const source = messages[idx];
+    // Only branch off a settled, real answer (grounded or the not-in-notes reply).
+    if (!source || source.role !== 'assistant' || source.beyond || source.error) return;
+    const question = messages
+      .slice(0, idx)
+      .reverse()
+      .find((m) => m.role === 'user')?.content;
+    if (!question) return;
+
+    // Retire the source's button and drop in a streaming "beyond" bubble below it.
+    const beyondId = createId();
+    const beyondMsg: ChatMessage = {
+      id: beyondId,
+      role: 'assistant',
+      content: '',
+      grounded: false,
+      citations: [],
+      streaming: true,
+      beyond: true,
+      createdAt: new Date().toISOString(),
+    };
+    set((s) => ({
+      messages: [
+        ...s.messages.map((m) => (m.id === messageId ? { ...m, beyondAsked: true } : m)),
+        beyondMsg,
+      ],
+      sending: true,
+    }));
+
+    const patchBeyond = (fields: Partial<ChatMessage>) =>
+      set((s) => ({
+        messages: s.messages.map((m) => (m.id === beyondId ? { ...m, ...fields } : m)),
+      }));
+
+    let settled: ChatMessage;
+    try {
+      const result = await answerBeyondNotes(question, {
+        onToken: (delta) =>
+          set((s) => ({
+            messages: s.messages.map((m) =>
+              m.id === beyondId ? { ...m, content: m.content + delta } : m,
+            ),
+          })),
+      });
+      settled = { ...beyondMsg, content: result.content, truncated: false, streaming: false };
+      patchBeyond(settled);
+    } catch (err) {
+      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      // An error bubble is no longer a "beyond" answer — clear the flag so it
+      // renders as a plain friendly error, not under the "Beyond your notes" header.
+      settled = { ...beyondMsg, content: friendly, streaming: false, beyond: false, error: true };
+      patchBeyond(settled);
+    } finally {
+      set({ sending: false });
+    }
+
+    if (activeSessionId && !settled.error) {
+      await insertChatMessage(activeSessionId, settled);
+      await touchChatSession(activeSessionId, new Date().toISOString());
     }
   },
 

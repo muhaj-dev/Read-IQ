@@ -127,22 +127,31 @@ export async function btlPost<T = unknown>(
 
 // --- Streaming chat ---------------------------------------------------------
 
+/** The outcome of a streamed completion: the full text, WHY it stopped, and how
+ *  many content deltas arrived. `finishReason` is unreliable on some gateways
+ *  (btl-2 reports 'stop' even when cut off), so callers also use `tokens` — which
+ *  tracks the emitted token count (~1 per delta) — against `max_tokens` to detect
+ *  a truncated answer and offer "Generate more". */
+export type StreamResult = { text: string; finishReason: string | null; tokens: number };
+
 /**
  * Stream a chat completion from the BTL runtime, invoking `onToken` with each
- * text delta as it arrives and resolving to the full concatenated answer. This
- * powers the grounded Ask ★ hero moment — the answer types itself out live.
+ * text delta as it arrives and resolving to the full concatenated answer plus its
+ * finish reason. This powers the grounded Ask ★ hero moment — the answer types
+ * itself out live.
  *
  * `body` is the OpenAI-compatible request MINUS `stream` (we always set it). The
  * gateway replies with Server-Sent Events (`data: {json}\n\n`, ending in
- * `data: [DONE]`); we parse the `choices[0].delta.content` off each event.
- * Same auth headers and friendly-error mapping as {@link btlPost}: any failure
- * throws a {@link BtlError} the UI can render calmly.
+ * `data: [DONE]`); we parse the `choices[0].delta.content` off each event and
+ * keep the last `choices[0].finish_reason` we see. Same auth headers and
+ * friendly-error mapping as {@link btlPost}: any failure throws a {@link BtlError}
+ * the UI can render calmly.
  */
 export async function btlChatStream(
   body: JsonBody,
   onToken?: (delta: string) => void,
   signal?: AbortSignal,
-): Promise<string> {
+): Promise<StreamResult> {
   if (!isBtlConfigured()) throw new BtlError('not-configured');
 
   const res = await streamingFetch(`${BASE_URL}/chat/completions`, {
@@ -169,6 +178,8 @@ export async function btlChatStream(
   const decoder = new TextDecoder();
   let buffer = '';
   let full = '';
+  let finishReason: string | null = null;
+  let tokens = 0;
 
   try {
     for (;;) {
@@ -184,16 +195,21 @@ export async function btlChatStream(
         buffer = buffer.slice(nl + 1);
         if (!line.startsWith('data:')) continue; // skip keep-alives / comments
         const payload = line.slice(5).trim();
-        if (payload === '[DONE]') return full;
+        if (payload === '[DONE]') return { text: full, finishReason, tokens };
         try {
           const json = JSON.parse(payload) as {
-            choices?: { delta?: { content?: string } }[];
+            choices?: { delta?: { content?: string }; finish_reason?: string | null }[];
           };
           const delta = json.choices?.[0]?.delta?.content ?? '';
           if (delta) {
             full += delta;
+            tokens += 1; // ~1 token per delta on btl-2 — a truncation proxy
             onToken?.(delta);
           }
+          // The last event of a completion carries the reason it stopped
+          // ('stop' = finished, 'length' = hit max_tokens → more to say).
+          const reason = json.choices?.[0]?.finish_reason;
+          if (reason) finishReason = reason;
         } catch {
           // A partial or non-JSON line — ignore and wait for more bytes.
         }
@@ -202,11 +218,11 @@ export async function btlChatStream(
   } catch (err) {
     // A mid-stream transport drop (or an abort). Surface as a friendly network
     // error unless the caller aborted on purpose.
-    if (signal?.aborted) return full;
+    if (signal?.aborted) return { text: full, finishReason, tokens };
     throw new BtlError('network', String(err));
   }
 
-  return full;
+  return { text: full, finishReason, tokens };
 }
 
 // --- Connectivity check -----------------------------------------------------

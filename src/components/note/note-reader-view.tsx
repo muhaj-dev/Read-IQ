@@ -53,7 +53,15 @@ export function NoteReaderView({ note }: Props) {
     <View className="flex-1" style={{ backgroundColor: colors.surfaceLowest }}>
       <StatusBar style="dark" />
       <SafeAreaView edges={['top', 'bottom']} style={styles.flex}>
-        <NoteHeader title="Note Reader" tinted />
+        <NoteHeader
+          title="Note Reader"
+          tinted
+          action={{
+            icon: 'ios-share',
+            label: 'Options',
+            onPress: () => router.push({ pathname: '/note/[id]/options', params: { id: note.id } }),
+          }}
+        />
 
         <View className="flex-1">
           <ReaderWebView
@@ -85,7 +93,7 @@ export function NoteReaderView({ note }: Props) {
           <ReaderToolbar
             mode={ann.mode}
             onSetMode={ann.setMode}
-            onOptions={() => router.push({ pathname: '/note/[id]/options', params: { id: note.id } })}
+            onListen={() => router.push({ pathname: '/note/[id]/listen', params: { id: note.id } })}
           />
         </View>
       </SafeAreaView>

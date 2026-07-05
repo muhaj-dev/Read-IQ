@@ -10,13 +10,13 @@ type Props = {
   mode: AnnotationMode;
   /** Toggle a tool on, or back to plain reading when tapped while active. */
   onSetMode: (mode: AnnotationMode) => void;
-  onOptions: () => void;
+  onListen: () => void;
 };
 
 /** The floating pill over the Note Reader. The pen highlights the selected text
  *  and the comment tool attaches a note to it — both toggle a mode instead of
- *  leaving the reader. Options opens the note's actions menu. */
-export function ReaderToolbar({ mode, onSetMode, onOptions }: Props) {
+ *  leaving the reader. Broadcast turns the note into a two-host conversation. */
+export function ReaderToolbar({ mode, onSetMode, onListen }: Props) {
   const colors = useTheme();
 
   const toggle = (target: AnnotationMode) => () => onSetMode(mode === target ? 'view' : target);
@@ -44,7 +44,7 @@ export function ReaderToolbar({ mode, onSetMode, onOptions }: Props) {
         active={mode === 'comment'}
         onPress={toggle('comment')}
       />
-      <Tool icon="ios-share" label="Options" active={false} onPress={onOptions} />
+      <Tool icon="headphones" label="Broadcast" active={false} onPress={onListen} />
     </View>
   );
 }
