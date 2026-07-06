@@ -1,7 +1,9 @@
 // Note → AI summary, grounded ONLY in the note's text. Summarize once at upload
 // and persist it (see use-notes-store); this spends BTL credits.
 
-import { btlPost, DEFAULT_CHAT_MODEL } from './btl';
+import { getChatModel } from '@/store/use-settings-store';
+
+import { btlPost } from './btl';
 
 type ChatResponse = {
   choices?: { message?: { content?: string } }[];
@@ -22,7 +24,7 @@ export async function summarizeNoteText(content: string): Promise<string> {
   if (!text) return '';
 
   const res = await btlPost<ChatResponse>('chat/completions', {
-    model: DEFAULT_CHAT_MODEL,
+    model: getChatModel(),
     temperature: 0.2,
     max_tokens: 180,
     messages: [

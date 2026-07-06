@@ -2,9 +2,10 @@
 // grounded ONLY in the note's text. No retrieval (single-note scope); the model
 // returns strict JSON we parse robustly, cached in SQLite by content hash.
 
+import { getChatModel } from '@/store/use-settings-store';
 import { HOSTS, type PodcastCoverage, type PodcastTurn } from '@/types/podcast';
 
-import { btlPost, DEFAULT_CHAT_MODEL } from './btl';
+import { btlPost } from './btl';
 import { hashContent } from './hash';
 
 // Re-exported so existing importers keep working now that hashContent moved to lib/hash.
@@ -152,7 +153,7 @@ export async function generateEpisodeScript(note: {
 
   // Plain chat + robust parser, not a `response_format` field (unverified here, could 400).
   const res = await btlPost<ChatCompletion>('chat/completions', {
-    model: DEFAULT_CHAT_MODEL,
+    model: getChatModel(),
     temperature: 0.6, // warmer than Ask — the hosts should sound alive, not clinical
     max_tokens: SCRIPT_MAX_TOKENS,
     messages: [

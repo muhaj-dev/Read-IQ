@@ -3,10 +3,11 @@
 // answer drops its citations so a non-answer is never tagged "from your notes".
 
 import { useNotesStore } from '@/store/use-notes-store';
+import { getChatModel } from '@/store/use-settings-store';
 import type { Citation } from '@/types/chat';
 import type { RetrievalHit } from '@/types/retrieval';
 
-import { btlChatStream, btlPost, BtlError, DEFAULT_CHAT_MODEL } from './btl';
+import { btlChatStream, btlPost, BtlError } from './btl';
 import { retrieveTopK } from './retrieval';
 
 /** The decline sentence — used identically as prompt instruction, fallback, and detector. */
@@ -114,7 +115,7 @@ function buildContext(hits: RetrievalHit[]): string {
 
 /** The shared OpenAI-compatible request body for a grounded answer. */
 function chatRequest(messages: ChatMsg[]): Record<string, unknown> {
-  return { model: DEFAULT_CHAT_MODEL, temperature: 0.2, max_tokens: ANSWER_MAX_TOKENS, messages };
+  return { model: getChatModel(), temperature: 0.2, max_tokens: ANSWER_MAX_TOKENS, messages };
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

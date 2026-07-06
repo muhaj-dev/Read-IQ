@@ -41,7 +41,8 @@ export const settingsSections: SettingsSectionData[] = [
     key: 'ai',
     label: 'AI Settings',
     rows: [
-      { key: 'model', icon: 'smart-toy', title: 'AI Model', value: 'GPT-4o', kind: 'chevron' },
+      // `value` is filled at render from the selected model (see settings/index).
+      { key: 'model', icon: 'smart-toy', title: 'AI Model', kind: 'chevron' },
       { key: 'style', icon: 'edit-note', title: 'Answer Style', value: 'Detailed', kind: 'chevron' },
     ],
   },

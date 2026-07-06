@@ -2,9 +2,10 @@
 // retrieval (single-note scope); the model returns strict JSON we parse and
 // validate. Thin notes short-circuit with no model call; store caches by hash.
 
+import { getChatModel } from '@/store/use-settings-store';
 import type { QuizOption, QuizQuestion } from '@/types/quiz';
 
-import { btlPost, DEFAULT_CHAT_MODEL } from './btl';
+import { btlPost } from './btl';
 
 /** Fallback question target when a caller doesn't ask for a specific count. */
 const DEFAULT_TARGET = 10;
@@ -173,7 +174,7 @@ export async function generateQuiz(
 
   // Plain chat + robust parser, not a `response_format` field (unverified here).
   const res = await btlPost<ChatCompletion>('chat/completions', {
-    model: DEFAULT_CHAT_MODEL,
+    model: getChatModel(),
     // Low for accuracy; a re-attempt lifts it to explore different corners.
     temperature: avoid.length > 0 ? 0.6 : 0.3,
     max_tokens: maxTokens,

@@ -26,6 +26,7 @@ import { useDeadlinesStore } from '@/store/use-deadlines-store';
 import { useNotesStore } from '@/store/use-notes-store';
 import { useOnboardingStore } from '@/store/use-onboarding-store';
 import { useQuizStore } from '@/store/use-quiz-store';
+import { useSettingsStore } from '@/store/use-settings-store';
 import { useSubjectsStore } from '@/store/use-subjects-store';
 import { useUserStore } from '@/store/use-user-store';
 
@@ -55,6 +56,7 @@ export default function RootLayout() {
   const initChat = useChatStore((s) => s.init);
   const initQuiz = useQuizStore((s) => s.init);
   const initDeadlines = useDeadlinesStore((s) => s.init);
+  const initSettings = useSettingsStore((s) => s.init);
   const recordDailyActivity = useUserStore((s) => s.recordDailyActivity);
   useEffect(() => {
     initNotes();
@@ -63,9 +65,10 @@ export default function RootLayout() {
     initChat();
     initQuiz();
     initDeadlines();
+    initSettings();
     // Count the streak only after the profile loads, or a first tick overwrites lastActiveDate.
     initUser().then(recordDailyActivity);
-  }, [initNotes, initSubjects, initOnboarding, initChat, initQuiz, initDeadlines, initUser, recordDailyActivity]);
+  }, [initNotes, initSubjects, initOnboarding, initChat, initQuiz, initDeadlines, initSettings, initUser, recordDailyActivity]);
 
   if (!fontsLoaded) return null;
 
