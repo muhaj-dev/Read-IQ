@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/images/brand/readiq-wordmark.png" alt="readIQ" width="200" />
+<img src="./assets/images/brand/readiq-wordmark-white.png" alt="readIQ" width="260" />
 
 # readIQ
 
