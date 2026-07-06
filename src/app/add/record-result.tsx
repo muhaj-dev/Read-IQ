@@ -19,7 +19,7 @@ import { useNotesStore } from '@/store/use-notes-store';
 
 const READ_FAIL = "We couldn't transcribe that recording. You can type or edit the transcript instead.";
 
-/** Add — Record Result: transcribe the lecture via BTL audio, confirm it, tag, save. */
+/** Add — Record Result: transcribe the lecture (Whisper), summarize on BTL, confirm, tag, save. */
 export default function RecordResultScreen() {
   const colors = useTheme();
   const router = useRouter();

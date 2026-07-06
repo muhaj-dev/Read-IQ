@@ -30,7 +30,9 @@ export const DEFAULT_VISION_MODEL = 'gemini-2.5-flash';
 // /audio/transcriptions 404s, gpt-audio 400s, voxtral's 32k context = ~1s of audio).
 // Record transcription runs through OpenAI Whisper instead (see lib/transcription.ts).
 
-// No EMBED_MODEL: catalog has no text-embedding model, so retrieval is lexical.
+// Text embeddings for semantic retrieval — verified live (2026-07-06): BTL now serves
+// text-embedding-3-small at POST /v1/embeddings (1536-dim, standard OpenAI shape).
+export const DEFAULT_EMBED_MODEL = 'text-embedding-3-small';
 
 // --- Friendly errors --------------------------------------------------------
 // Every failure maps to a calm, student-facing sentence — never a raw trace.
@@ -102,6 +104,37 @@ export async function btlPost<T = unknown>(
   }
 
   return (await res.json()) as T;
+}
+
+// --- Embeddings -------------------------------------------------------------
+// One batched call embeds many texts; used both to embed a note's chunks (on save)
+// and to embed a question (on ask). Response shape verified live: { data: [{ index,
+// embedding: number[] }], usage }. Throws {@link BtlError} — callers fall back to lexical.
+
+type EmbeddingResponse = { data?: { index?: number; embedding?: number[] }[] };
+
+/** Embed each input text → one vector per input, aligned to input order. */
+export async function btlEmbed(inputs: string[], signal?: AbortSignal): Promise<number[][]> {
+  if (inputs.length === 0) return [];
+
+  const res = await btlPost<EmbeddingResponse>(
+    'embeddings',
+    { model: DEFAULT_EMBED_MODEL, input: inputs },
+    signal,
+  );
+
+  // Place each vector at its own `index` so a reordered response still lines up.
+  const out = new Array<number[] | undefined>(inputs.length);
+  for (let i = 0; i < (res.data?.length ?? 0); i += 1) {
+    const item = res.data![i];
+    const at = typeof item.index === 'number' ? item.index : i;
+    if (Array.isArray(item.embedding) && at >= 0 && at < inputs.length) out[at] = item.embedding;
+  }
+  // A missing/short vector means the batch is unusable — fail so the caller uses lexical.
+  if (out.some((v) => !v || v.length === 0)) {
+    throw new BtlError('server', 'embeddings: response missing a vector');
+  }
+  return out as number[][];
 }
 
 // --- Response text extraction ------------------------------------------------

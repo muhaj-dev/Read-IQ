@@ -279,3 +279,69 @@ export async function answerBeyondNotes(
   ]);
   return generateAnswer(request, opts.onToken, opts.signal);
 }
+
+// ── Attached-image answers ──────────────────────────────────────────────────
+// A photo attached to a question is the student's OWN material, so it's a valid
+// grounding source. Two paths: if the image's topic is already in their notes we
+// answer strictly from notes + image (grounded, cited); if it isn't, the store
+// asks the student whether to save it, then we answer from the image itself.
+
+/** A blank/short question with an image means "read this photo and explain it". */
+const DEFAULT_IMAGE_QUESTION = 'Explain what this image shows.';
+
+const IMAGE_GROUNDED_SYSTEM_PROMPT =
+  SYSTEM_PROMPT +
+  '\n\nThe student also attached an IMAGE; its text is given as source [IMG]. Treat ' +
+  'it exactly like the notes — a real source you may answer from — but still never ' +
+  'add outside facts beyond what the notes and the image actually say.';
+
+const IMAGE_OPEN_SYSTEM_PROMPT =
+  'You are readIQ, a calm university study companion. The student attached an image ' +
+  'that is NOT in their saved notes. Use the text read out of that image (below) as ' +
+  'your PRIMARY source, and you MAY draw on general knowledge to explain it clearly ' +
+  'and accurately — be honest that this goes beyond their saved notes.\n\n' +
+  'Keep it SHORT and readable — aim for about 250 words, never exceed 400. Open with ' +
+  'one or two sentences that answer directly, then the key points. Put each key term ' +
+  'on its own line in bold ("**Term**") followed by a short one-line meaning. Bold ' +
+  'only the most important terms. No "#" headings, no padding.';
+
+export type ImageAskResult = AskResult & { fromImage: true };
+
+/** Answer strictly from the student's notes AND their attached image. Returns null
+ *  when the topic isn't in the notes (the store then offers to save the image). */
+export async function answerImageGrounded(
+  question: string,
+  imageText: string,
+  opts: { onToken?: (delta: string) => void; signal?: AbortSignal } = {},
+): Promise<ImageAskResult | null> {
+  const q = question.trim() || DEFAULT_IMAGE_QUESTION;
+  const hits = await retrieveTopK(q, RETRIEVE_K);
+  if (hits.length === 0) return null; // not in notes → caller asks to save it
+
+  const context = `[IMG] Attached image\n${imageText.trim()}\n\n${buildContext(hits)}`;
+  const request = chatRequest([
+    { role: 'system', content: IMAGE_GROUNDED_SYSTEM_PROMPT },
+    { role: 'user', content: `Notes:\n${context}\n\nQuestion: ${q}` },
+  ]);
+  const { content, truncated } = await generateAnswer(request, opts.onToken, opts.signal);
+  const declined = content.toLowerCase().startsWith("i don't have that in your notes");
+  if (!content || declined) {
+    return { grounded: false, content: content || NOT_IN_NOTES, citations: [], truncated: false, fromImage: true };
+  }
+  return { grounded: true, content, citations: toCitations(hits), truncated, fromImage: true };
+}
+
+/** Answer from the attached image's text (+ general knowledge to explain it), for a
+ *  topic not in the notes — used after the student picks "save" or "answer once". */
+export async function answerImageOpen(
+  question: string,
+  imageText: string,
+  opts: { onToken?: (delta: string) => void; signal?: AbortSignal } = {},
+): Promise<BeyondResult> {
+  const q = question.trim() || DEFAULT_IMAGE_QUESTION;
+  const request = chatRequest([
+    { role: 'system', content: IMAGE_OPEN_SYSTEM_PROMPT },
+    { role: 'user', content: `Text read from the image:\n${imageText.trim()}\n\nQuestion: ${q}` },
+  ]);
+  return generateAnswer(request, opts.onToken, opts.signal);
+}

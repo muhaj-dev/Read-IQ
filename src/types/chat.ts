@@ -2,12 +2,29 @@
 
 export type Role = 'user' | 'assistant';
 
+/** An image the student attached to a question — shown as a thumbnail on their bubble. */
+export type ChatAttachment = {
+  id: string;
+  /** Local uri (camera / gallery pick) for the thumbnail preview. */
+  uri: string;
+};
+
 /** A saved note an answer was drawn from — rendered as a "From your notes" tag. */
 export type Citation = {
   noteId: string;
   noteTitle: string;
   /** A short slice of the source chunk (for preview / context). */
   snippet: string;
+};
+
+/** A question + read-out image held while we ask the student to save it or answer once. */
+export type PendingImageAsk = {
+  question: string;
+  /** Text OCR'd out of the attached image (the grounding material). */
+  imageText: string;
+  imageUri: string;
+  /** Topic/subject inferred from the question, used to file the saved note. */
+  topic: string;
 };
 
 export type ChatMessage = {
@@ -18,6 +35,14 @@ export type ChatMessage = {
   grounded: boolean;
   /** Source notes for a grounded answer → the "From your notes" tags. */
   citations: Citation[];
+  /** Images the student attached to this question (user turns only). */
+  attachments?: ChatAttachment[];
+  /** Answer used an attached image as a source → shows the "From your image" tag. */
+  fromImage?: boolean;
+  /** The attached image isn't in the notes yet — this bubble asks to save it or answer once. */
+  imageDecision?: PendingImageAsk;
+  /** Once the student chooses, records which path so the prompt buttons retire. */
+  decided?: 'saved' | 'once';
   /** The assistant reply is still streaming in (drives the typing indicator). */
   streaming?: boolean;
   /** The answer hit the length cap mid-flow — there is more to say. Live-only. */

@@ -81,7 +81,7 @@ The same grounded material powers **quizzes** (MCQs generated only from a subjec
 | 📝 **Auto-Quiz** | Generates grounded MCQs per subject, scores the run, reveals the correct option + a short "why" per miss | `chat/completions` **(JSON)** — `btl-2` |
 | 📸 **Scan a note** | Photograph a page (even handwriting); AI reads it into a saved note | `chat/completions` **(vision OCR)** — `gemini-2.5-flash` |
 | 📄 **Upload a file** | PDF → text via BTL vision · .docx → text on-device (jszip); summarized and saved | `chat/completions` **(vision)** — `gemini-2.5-flash` |
-| 🎙️ **Record a lecture** | Records class audio, transcribes it, summarizes and saves it as a note | Transcription via Whisper → summary on `btl-2` |
+| 🎙️ **Record a lecture** | Records class audio, transcribes it, summarizes and saves it as a note | Transcription via Groq's free Whisper → summary on `btl-2` |
 | 🎧 **Broadcast a note** | Turns a single saved note into a two-host audio conversation ("From Your Notes") the student **listens** to — script grounded **only** in that note, played aloud on-device. Reachable from Note Details and the reader toolbar. | `chat/completions` — `btl-2` |
 | 📅 **Deadlines** | Colour-coded exam/assignment dates with countdowns, a calendar, and reminder toggles | — (local SQLite) |
 | 📈 **Progress** | Streaks, quiz scores, and weak-topic tracking that show improvement over time | — |
@@ -264,6 +264,7 @@ Other scripts: `npm run android` · `npm run ios` · `npm run web` · `npm run l
 |---|---|---|
 | `EXPO_PUBLIC_BTL_API_KEY` | ✅ | Scoped BTL runtime key — read only in `lib/btl.ts` |
 | `EXPO_PUBLIC_BTL_BASE_URL` | ✅ | BTL gateway base URL (includes `/v1`) |
+| `EXPO_PUBLIC_GROQ_API_KEY` | ⬜ | Free [Groq](https://console.groq.com/keys) key for lecture **Record** transcription — read only in `lib/transcription.ts`. Omit → Record uses a manual transcript. |
 
 `.env` is git-ignored. Never commit it.
 
@@ -280,7 +281,7 @@ Other scripts: `npm run android` · `npm run ios` · `npm run web` · `npm run l
 | 1 | **Grounded Ask ★** (the star) | `POST /v1/chat/completions` · **streamed (SSE)** | `btl-2` | Retrieve note chunks → stream a grounded answer token-by-token → return citations |
 | 2 | **Quiz generation** | `POST /v1/chat/completions` · **JSON** | `btl-2` | Grounded MCQs per subject with inline "why" explanations; result cached in SQLite |
 | 3 | **Note & lecture summary** | `POST /v1/chat/completions` | `btl-2` | Summarize pasted, uploaded, transcribed, and scanned content into a clean note |
-| 4 | **Broadcast script** (two-host podcast) | `POST /v1/chat/completions` | `btl-2` | Two-host "From Your Notes" audio dialogue grounded in a single note |
+| 4 | **Broadcast script** (two-host podcast) | `POST /v1/chat/completions` | `btl-2` | Two-host "From Your Notes" dialogue grounded in one note; a long note is split into ordered segments so the episode covers it **end-to-end** (multiple grounded calls per episode), cached by content hash |
 | 5 | **Scan OCR** (photo → text) | `POST /v1/chat/completions` · **vision** | `gemini-2.5-flash` | Photo sent as an `image_url` content part; reads printed *and* handwritten pages |
 | 6 | **PDF text extraction** (upload) | `POST /v1/chat/completions` · **vision** | `gemini-2.5-flash` | PDF read via the same vision content path into the note body |
 | 7 | **Connectivity / health check** | `GET /v1/models` | — | Free check (no tokens spent) that gates the "AI is set up" state |
@@ -295,10 +296,16 @@ Other scripts: `npm run android` · `npm run ios` · `npm run web` · `npm run l
 ### The one documented exception — lecture transcription
 
 BTL has **no working audio-transcription path** — we verified this live during the build:
-`/v1/audio/transcriptions` returns **404**, `gpt-audio` **400s** through the gateway, and
-`voxtral` tokenizes audio so fast that its 32k context holds **~1 second** of audio. So lecture
-**Record** transcribes through a Whisper-compatible endpoint directly (OpenAI, or Groq's free
-`whisper-large-v3`), kept isolated to [`src/lib/transcription.ts`](src/lib/transcription.ts) exactly the way the BTL key is isolated to `btl.ts`. **The resulting transcript is then summarized back on `btl-2`**, so the intelligence still lands on BTL. When no transcription key is set, Record degrades gracefully to a manual, editable transcript — it never blocks a save.
+`/v1/audio/transcriptions` returns **404**, `voxtral` tokenizes audio so fast that its 32k context
+holds **~1 second** of audio, and `gpt-audio` **400s** because the gateway **strips the
+`input_audio` content part** (`"This model requires that either input content or output modality
+contain audio"` — the audio never reaches the model). So lecture **Record** transcribes through a
+Whisper-compatible endpoint directly — by default **Groq's free `whisper-large-v3-turbo`** (set one
+line, `EXPO_PUBLIC_GROQ_API_KEY`; falls back to OpenAI `whisper-1`) — kept isolated to
+[`src/lib/transcription.ts`](src/lib/transcription.ts) exactly the way the BTL key is isolated to
+`btl.ts`. **The resulting transcript is then summarized back on `btl-2`**, so the intelligence still
+lands on BTL. When no transcription key is set, Record degrades gracefully to a manual, editable
+transcript — it never blocks a save.
 
 ### Retrieval note (why lexical, not vectors)
 

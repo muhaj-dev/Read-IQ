@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 
 import * as db from '@/lib/db';
+import { embedAndStoreNote, syncNoteEmbeddings } from '@/lib/embeddings';
 import type { Note, NoteInput, NotePatch } from '@/types/note';
 
 function createId(): string {
@@ -35,6 +36,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     try {
       const notes = await db.listNotes();
       set({ notes, loaded: true });
+      // Backfill retrieval vectors for notes saved before the semantic upgrade (or
+      // saved offline) — lazy, guarded, and non-blocking so launch stays instant.
+      void syncNoteEmbeddings(notes);
     } catch (err) {
       // Never crash the app over storage — start empty and let saves retry.
       console.warn('[notes] failed to load from SQLite', err);
@@ -66,6 +70,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     }
     // Optimistic: show the note immediately even if the write hiccuped.
     set((state) => ({ notes: [note, ...state.notes] }));
+    // Embed for semantic retrieval in the background — a snappy save; retrieval
+    // covers this note lexically until its vector lands (usually ~1s).
+    void embedAndStoreNote(note);
     return note;
   },
 
@@ -110,6 +117,13 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       console.warn('[notes] failed to update note', err);
     }
     set((state) => ({ notes: state.notes.map((n) => (n.id === id ? next : n)) }));
+    // Re-embed only when the searchable text changed — retrieval derives its vectors
+    // and staleness hash from title + subject + content, so nothing else affects them.
+    const searchableChanged =
+      next.title !== current.title ||
+      next.subject !== current.subject ||
+      next.content !== current.content;
+    if (searchableChanged) void embedAndStoreNote(next);
   },
 
   removeNote: async (id) => {

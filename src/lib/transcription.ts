@@ -1,27 +1,44 @@
-// Record transcription — lecture audio → transcript via OpenAI Whisper.
+// Record transcription — lecture audio → transcript via a Whisper-compatible API.
 //
 // ⚠️ This is the ONE feature that does NOT route through the BTL runtime: BTL has
-// no working audio-transcription path (verified — /audio/transcriptions is 404,
-// gpt-audio 400s, voxtral's context caps at ~1s of audio). Whisper's multipart
-// endpoint uploads the recording over plain fetch, so it runs in Expo Go with no
-// dev build. The returned transcript is then summarized by btl-2, so the AI
-// summary stays on BTL.
+// no working audio path (re-verified live — the gateway strips the `input_audio`
+// content part, so gpt-audio replies "input content must contain audio"). Speech
+// recognition therefore runs through Groq's free Whisper by default (OpenAI-
+// compatible), over a plain multipart fetch so it works in Expo Go with no dev
+// build. The returned transcript is then summarized by btl-2, so the study
+// intelligence (summary, quiz, podcast, Ask) all stays on BTL.
 //
-// The transcript never blocks a save: if the key is missing we land straight on
-// the manual editor, and any call failure surfaces the retry/"type it instead"
-// screen (see use-media-extraction + record-result).
+// Setup: get a free key at https://console.groq.com/keys and add ONE line to .env:
+//   EXPO_PUBLIC_GROQ_API_KEY=gsk_...
+// (Already have an OpenAI key? Set EXPO_PUBLIC_OPENAI_API_KEY instead — it falls
+//  back to api.openai.com + whisper-1 automatically.)
+//
+// The transcript never blocks a save: with no key we land straight on the manual
+// editor, and any call failure surfaces the retry / "type it instead" screen.
 
-// OpenAI credentials for transcription only — kept isolated to this file, the way
-// the BTL key is isolated to lib/btl.ts. Add EXPO_PUBLIC_OPENAI_API_KEY to .env.
+// STT credentials — kept isolated to this file, the way the BTL key is isolated to
+// lib/btl.ts. Prefer Groq (free tier); fall back to OpenAI if only that key is set.
+const GROQ_API_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY ?? '';
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? '';
-const OPENAI_BASE_URL = (process.env.EXPO_PUBLIC_OPENAI_BASE_URL ?? 'https://api.openai.com/v1').replace(/\/+$/, '');
-// Defaults to OpenAI's whisper-1, but any Whisper-compatible endpoint works via the
-// base-URL + model overrides (e.g. Groq's free whisper-large-v3).
-const WHISPER_MODEL = process.env.EXPO_PUBLIC_OPENAI_STT_MODEL ?? 'whisper-1';
+const USE_GROQ = GROQ_API_KEY.length > 0;
 
-/** True only when an OpenAI key is present — otherwise Record uses a manual transcript. */
+const STT_API_KEY = USE_GROQ ? GROQ_API_KEY : OPENAI_API_KEY;
+// Base URL defaults to the chosen provider; override with EXPO_PUBLIC_STT_BASE_URL.
+const STT_BASE_URL = (
+  process.env.EXPO_PUBLIC_STT_BASE_URL ??
+  process.env.EXPO_PUBLIC_OPENAI_BASE_URL ??
+  (USE_GROQ ? 'https://api.groq.com/openai/v1' : 'https://api.openai.com/v1')
+).replace(/\/+$/, '');
+// Model defaults to Groq's fast free Whisper (or OpenAI's whisper-1); override with
+// EXPO_PUBLIC_STT_MODEL (e.g. 'whisper-large-v3' for max accuracy).
+const STT_MODEL =
+  process.env.EXPO_PUBLIC_STT_MODEL ??
+  process.env.EXPO_PUBLIC_OPENAI_STT_MODEL ??
+  (USE_GROQ ? 'whisper-large-v3-turbo' : 'whisper-1');
+
+/** True only when an STT key is present — otherwise Record uses a manual transcript. */
 export function isTranscriptionConfigured(): boolean {
-  return OPENAI_API_KEY.length > 0;
+  return STT_API_KEY.length > 0;
 }
 
 /** Multipart filename + mime from the recording's extension (Whisper reads the bytes). */
@@ -33,11 +50,11 @@ function audioFile(uri: string): { name: string; type: string } {
   return { name: 'audio.m4a', type: 'audio/m4a' }; // expo-audio HIGH_QUALITY → AAC/.m4a
 }
 
-/** Transcribe a recorded lecture via OpenAI Whisper. '' when not configured; throws on failure. */
+/** Transcribe a recorded lecture via Whisper. '' when not configured; throws on failure. */
 export async function transcribeAudio(uri: string): Promise<string> {
   if (!isTranscriptionConfigured()) {
     // No key → skip straight to the editable transcript instead of an error screen.
-    console.warn('[transcription] EXPO_PUBLIC_OPENAI_API_KEY not set — using manual transcript.');
+    console.warn('[transcription] no STT key set (EXPO_PUBLIC_GROQ_API_KEY) — using manual transcript.');
     return '';
   }
 
@@ -45,16 +62,16 @@ export async function transcribeAudio(uri: string): Promise<string> {
   const form = new FormData();
   // React Native multipart file part: { uri, name, type } — fetch streams file:// directly.
   form.append('file', { uri, name: file.name, type: file.type } as unknown as Blob);
-  form.append('model', WHISPER_MODEL);
+  form.append('model', STT_MODEL);
   form.append('response_format', 'text'); // body IS the transcript — no JSON to parse
 
   let res: Response;
   try {
     // Global RN fetch (not expo/fetch) — it handles multipart file uploads. No
     // Content-Type header: fetch sets the multipart boundary itself.
-    res = await fetch(`${OPENAI_BASE_URL}/audio/transcriptions`, {
+    res = await fetch(`${STT_BASE_URL}/audio/transcriptions`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+      headers: { Authorization: `Bearer ${STT_API_KEY}` },
       body: form,
     });
   } catch (err) {

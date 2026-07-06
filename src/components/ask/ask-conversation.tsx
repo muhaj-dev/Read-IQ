@@ -5,8 +5,10 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { AiBubble } from '@/components/ask/ai-bubble';
 import { AskHero } from '@/components/ask/ask-hero';
 import { BeyondNotesButton } from '@/components/ask/beyond-notes-button';
+import { FromYourImageCard } from '@/components/ask/from-your-image-card';
 import { FromYourNotesCard } from '@/components/ask/from-your-notes-card';
 import { GenerateMoreButton } from '@/components/ask/generate-more-button';
+import { ImageDecisionCard } from '@/components/ask/image-decision-card';
 import { SuggestionChips } from '@/components/ask/suggestion-chips';
 import { UserBubble } from '@/components/ask/user-bubble';
 import { AppIcon } from '@/components/ui/app-icon';
@@ -46,13 +48,23 @@ function AddNoteCta() {
 function MessageRow({ message, nextIsBeyond }: { message: ChatMessage; nextIsBeyond: boolean }) {
   const generateMore = useChatStore((s) => s.generateMore);
   const answerBeyond = useChatStore((s) => s.answerBeyond);
+  const resolveImageDecision = useChatStore((s) => s.resolveImageDecision);
+  const sending = useChatStore((s) => s.sending);
 
   if (message.role === 'user') {
-    return <UserBubble text={message.content} time={clockTime(message.createdAt)} />;
+    return (
+      <UserBubble
+        text={message.content}
+        time={clockTime(message.createdAt)}
+        attachments={message.attachments}
+      />
+    );
   }
 
   const settled = !message.streaming;
-  const fallback = settled && !message.error && !message.beyond && isFallbackReply(message.content);
+  const deciding = !!message.imageDecision;
+  const fallback =
+    settled && !message.error && !message.beyond && !deciding && isFallbackReply(message.content);
   // Offer "Generate more" under every settled, note-backed answer until the notes are exhausted.
   const canGenerateMore = settled && message.grounded && !message.exhausted;
   // Offer the opt-in outside answer under any settled reply that hasn't spawned one.
@@ -61,6 +73,7 @@ function MessageRow({ message, nextIsBeyond }: { message: ChatMessage; nextIsBey
     !message.error &&
     !message.beyond &&
     !message.beyondAsked &&
+    !deciding &&
     !nextIsBeyond &&
     (message.grounded || fallback);
 
@@ -80,6 +93,16 @@ function MessageRow({ message, nextIsBeyond }: { message: ChatMessage; nextIsBey
           noteTitle={citation.noteTitle}
         />
       ))}
+      {settled && message.fromImage ? <FromYourImageCard /> : null}
+      {deciding ? (
+        <ImageDecisionCard
+          topic={message.imageDecision!.topic}
+          decided={message.decided}
+          busy={sending}
+          onSave={() => resolveImageDecision(message.id, 'saved')}
+          onOnce={() => resolveImageDecision(message.id, 'once')}
+        />
+      ) : null}
       {canGenerateMore ? (
         <GenerateMoreButton busy={message.continuing} onPress={() => generateMore(message.id)} />
       ) : null}

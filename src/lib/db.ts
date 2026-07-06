@@ -8,6 +8,7 @@ import type { Deadline } from '@/types/deadline';
 import type { Note, NoteAttachment, NoteComment, NoteSource, PdfAnnotations } from '@/types/note';
 import type { PodcastCoverage, PodcastEpisode, PodcastTurn } from '@/types/podcast';
 import type { GeneratedQuiz, QuizQuestion, QuizResult } from '@/types/quiz';
+import type { StoredChunk } from '@/types/retrieval';
 
 const DB_NAME = 'noteiq.db';
 
@@ -27,6 +28,16 @@ const SCHEMA = `
     name       TEXT PRIMARY KEY NOT NULL,
     created_at TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS note_chunks (
+    id           TEXT PRIMARY KEY NOT NULL,
+    note_id      TEXT NOT NULL,
+    idx          INTEGER NOT NULL,
+    text         TEXT NOT NULL,
+    embedding    TEXT NOT NULL,   -- JSON float array (text-embedding-3-small, 1536-dim)
+    content_hash TEXT NOT NULL,   -- note's searchable-text hash when embedded (staleness)
+    created_at   TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_note_chunks_note ON note_chunks (note_id);
   CREATE TABLE IF NOT EXISTS chat_sessions (
     id         TEXT PRIMARY KEY NOT NULL,
     title      TEXT NOT NULL,
@@ -307,8 +318,84 @@ export async function updateNote(
 export async function deleteNote(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM notes WHERE id = ?', id);
-  // Drop the note's cached podcast; quizzes are subject-keyed and self-heal.
+  // Drop the note's retrieval vectors and cached podcast; quizzes are subject-keyed and self-heal.
+  await db.runAsync('DELETE FROM note_chunks WHERE note_id = ?', id);
   await db.runAsync('DELETE FROM podcast_episodes WHERE note_id = ?', id);
+}
+
+// ── Note chunk vectors (semantic retrieval) ──────────────────────────────────
+// One row per chunk; embedded once on save/edit, read at question time to cosine-
+// rank against the query. Persisting them makes retrieval instant and offline for
+// already-embedded notes. See lib/embeddings.ts (write) + lib/retrieval.ts (read).
+
+type ChunkRow = {
+  note_id: string;
+  idx: number;
+  text: string;
+  embedding: string;
+  content_hash: string;
+};
+
+function parseEmbedding(raw: string): number[] | null {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.every((n) => typeof n === 'number') ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Every stored chunk vector across all notes — the corpus retrieval cosine-ranks.
+ *  Rows with an unparseable vector are skipped (treated as not-yet-embedded). */
+export async function getAllNoteChunks(): Promise<StoredChunk[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<ChunkRow>(
+    'SELECT note_id, idx, text, embedding, content_hash FROM note_chunks',
+  );
+  const chunks: StoredChunk[] = [];
+  for (const r of rows) {
+    const embedding = parseEmbedding(r.embedding);
+    if (!embedding) continue;
+    chunks.push({ noteId: r.note_id, idx: r.idx, text: r.text, embedding, contentHash: r.content_hash });
+  }
+  return chunks;
+}
+
+/** noteId → the content_hash its stored chunks were embedded from (any chunk suffices,
+ *  since a note's chunks are written together). Lets backfill skip up-to-date notes. */
+export async function getNoteChunkHashes(): Promise<Map<string, string>> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ note_id: string; content_hash: string }>(
+    'SELECT note_id, content_hash FROM note_chunks GROUP BY note_id',
+  );
+  return new Map(rows.map((r) => [r.note_id, r.content_hash]));
+}
+
+/** Replace a note's vectors atomically (delete old, insert fresh) after a save/edit. */
+export async function replaceNoteChunks(noteId: string, chunks: StoredChunk[]): Promise<void> {
+  const db = await getDb();
+  const createdAt = new Date().toISOString();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM note_chunks WHERE note_id = ?', noteId);
+    for (const c of chunks) {
+      await db.runAsync(
+        'INSERT INTO note_chunks (id, note_id, idx, text, embedding, content_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        `${noteId}:${c.idx}`,
+        noteId,
+        c.idx,
+        c.text,
+        JSON.stringify(c.embedding),
+        c.contentHash,
+        createdAt,
+      );
+    }
+  });
+}
+
+/** Drop a note's vectors (e.g. its text was cleared) without touching the note row. */
+export async function deleteNoteChunks(noteId: string): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM note_chunks WHERE note_id = ?', noteId);
 }
 
 /** Custom subjects/courses the student added, oldest first. */
