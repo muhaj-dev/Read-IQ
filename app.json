@@ -53,7 +53,8 @@
           "microphonePermission": "readIQ records your lectures so it can transcribe them into notes."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
