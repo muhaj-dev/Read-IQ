@@ -4,14 +4,34 @@
 
 # readIQ
 
-**Your AI study companion that only answers from _your_ notes.**
-_Notes in. Trustworthy answers out. Every answer proven with a 📌 From your notes tag._
+**Your AI study companion that learns from _your_ notes — and proves it.**
+_Notes in. Grounded, cited answers out. Every grounded answer proven with a 📌 From your notes tag._
 
 <p>▶️ &nbsp; <a href="#12-demo-video"><strong>Watch the Demo</strong></a> &nbsp; · &nbsp; 💻 &nbsp; <a href="https://github.com/muhaj-dev/ReadIQ"><strong>GitHub Repo</strong></a> &nbsp; · &nbsp; 🧠 &nbsp; <a href="#9-btl-runtime-usage"><strong>How we use the BTL Runtime</strong></a></p>
 
 Built for the **BTL Runtime Hackathon** by **Bad Theory Labs** (badtheorylabs.com) · July 3–5, 2026.
 
 </div>
+
+---
+
+## The Story
+
+Imagine two students preparing for the same exam. Both spend weeks studying. Both work hard. But when the results are released, one passes comfortably while the other fails.
+
+**Why?**
+
+Because many students don't fail from a lack of effort — they fail because they prepare from the **wrong materials**, study from too many scattered sources, and lose sight of what their lecturer actually taught and expects.
+
+So we asked ourselves a simple question:
+
+> ### What if every student had an AI tutor that only knew what their lecturer taught?
+
+That's how **readIQ** was born.
+
+Students upload their lecture notes, PDFs, slides, or textbooks, and readIQ **learns directly from their notes** to become a personal AI study companion. It **summarizes notes, explains difficult concepts, answers questions, and generates quizzes** — grounded in the student's **own materials**, so they revise using the exact concepts, terminology, and teaching style they'll be examined on, and prepare with greater confidence and accuracy.
+
+With readIQ, students don't just study more — **they study smarter.**
 
 ---
 
@@ -37,7 +57,7 @@ Built for the **BTL Runtime Hackathon** by **Bad Theory Labs** (badtheorylabs.co
 
 ## 1. Project Overview
 
-**readIQ** is a calm, organized AI study partner that **remembers a student's notes** and answers questions using **only what they've saved** — and proves it with a small **📌 From your notes** tag naming the exact source note.
+**readIQ** is a calm, organized AI study partner that **learns from a student's notes** and grounds its answers in **what they've saved** — proving each one with a small **📌 From your notes** tag naming the exact source note. And when the student explicitly wants help beyond their notes, readIQ gives it openly — clearly labeled as *not* from their material.
 
 A student adds notes four ways — **paste text, upload a file (PDF / .docx), snap a photo (AI reads it), or record a lecture** — and readIQ turns that raw material into a trustworthy study tool: a grounded chat, auto-generated quizzes, colour-coded deadlines, streaks, and weak-topic tracking.
 
@@ -45,7 +65,7 @@ A student adds notes four ways — **paste text, upload a file (PDF / .docx), sn
 
 > ### The idea in one sentence
 >
-> When a stressed student sees **📌 From your notes** under an answer, they trust the app. That tag — the visible proof the app never makes anything up — is the emotional core of readIQ. If an answer can't be grounded in a real saved note, readIQ says so honestly instead of inventing one.
+> When a stressed student sees **📌 From your notes** under an answer, they trust the app. That tag — the visible proof the answer came straight from their own material — is the emotional core of readIQ. If a grounded answer can't be backed by a real saved note, readIQ says so honestly instead of faking the tag; and if the student wants help beyond their notes, it gives it openly, never pretending it came from one.
 
 ---
 
@@ -61,13 +81,11 @@ The result: students either don't use AI for revision, or they use it and quietl
 
 ## 3. Solution
 
-readIQ answers questions **only from the student's own saved notes**, and shows the receipt.
+readIQ **learns directly from the student's own notes** and grounds its answers in them — and shows the receipt.
 
-A student saves notes → readIQ splits and indexes them → when the student asks a question, readIQ **retrieves the relevant note chunks first**, and only then asks the model to answer **using those chunks alone**. If nothing relevant is found, it refuses to guess. Every grounded answer streams in live and carries a tappable **📌 From your notes: _<title>_** citation.
+A student saves notes → readIQ splits and indexes them → when the student asks a question, readIQ **retrieves the relevant note chunks first**, then answers **from those chunks**. Every grounded answer streams in live and carries a tappable **📌 From your notes: _<title>_** citation, so trust is enforced by **architecture** — the retrieval gate — **not just a polite system prompt.** This grounded, cite-your-source mode is readIQ's core. When the student's notes don't cover something, readIQ can also answer beyond them — clearly, and without pretending the answer came from a note.
 
-The same grounded material powers **quizzes** (MCQs generated only from a subject's notes, with a "why" for every miss), while **Scan** and **Record** use BTL vision and transcription to turn photos and lectures into notes in the first place.
-
-**Trust is enforced by architecture** — the retrieval gate — **not just by a polite system prompt.**
+The same material powers **quizzes** (MCQs generated from a subject's notes, with a "why" for every miss), while **Scan** and **Record** use BTL vision and transcription to turn photos and lectures into notes in the first place.
 
 ---
 
@@ -75,7 +93,8 @@ The same grounded material powers **quizzes** (MCQs generated only from a subjec
 
 | Feature | What it does | BTL Runtime capability |
 |---|---|---|
-| 💬 **Ask ★ (grounded chat)** | Answers **only** from saved notes; streams live; tags every answer **📌 From your notes** (tap → source). Honest fallback when nothing matches. | `chat/completions` **(streamed)** — `btl-2` |
+| 💬 **Ask ★ (grounded chat)** | Answers from your saved notes by default; streams live; tags every answer **📌 From your notes** (tap → source). Honest fallback when nothing matches. | `chat/completions` **(streamed)** — `btl-2` |
+| 🌐 **Answer beyond your notes** *(opt-in)* | When your notes don't cover a question, a quiet "Answer from outside your notes" option gives a concise **general-knowledge** answer — clearly labeled as *not* from your notes and closed with a real **References** list (never a faked 📌 tag). You stay in control of when readIQ steps outside your material. | `chat/completions` — `btl-2` |
 | 🧠 **Memory Panel** | A live, searchable list of every saved note — the visible proof the app remembers | — (local SQLite) |
 | ✍️ **Note Reader — highlight & comment** | Open any note in a clean, distraction-free reader and study **actively**: drag to select text, then **highlight** it (choose from several colours) or attach a **margin comment**. Highlights and comments are baked into the note and **persist across sessions**, so the note stays marked up every time you reopen it. You can also **Broadcast** the note to audio right from the reader toolbar. | — (local, WebView) |
 | 📝 **Auto-Quiz** | Generates grounded MCQs per subject, scores the run, reveals the correct option + a short "why" per miss | `chat/completions` **(JSON)** — `btl-2` |
@@ -278,7 +297,7 @@ Other scripts: `npm run android` · `npm run ios` · `npm run web` · `npm run l
 
 | # | Job in the app | BTL endpoint | Model | Depth of use |
 |---|---|---|---|---|
-| 1 | **Grounded Ask ★** (the star) | `POST /v1/chat/completions` · **streamed (SSE)** | `btl-2` | Retrieve note chunks → stream a grounded answer token-by-token → return citations |
+| 1 | **Grounded Ask ★** (the star) | `POST /v1/chat/completions` · **streamed (SSE)** | `btl-2` | Retrieve note chunks → stream a grounded answer token-by-token → return citations. **Opt-in "beyond your notes":** if the student explicitly asks, the same model answers from general knowledge instead — clearly *not* tagged as a note and closed with a real **References** list |
 | 2 | **Quiz generation** | `POST /v1/chat/completions` · **JSON** | `btl-2` | Grounded MCQs per subject with inline "why" explanations; result cached in SQLite |
 | 3 | **Note & lecture summary** | `POST /v1/chat/completions` | `btl-2` | Summarize pasted, uploaded, transcribed, and scanned content into a clean note |
 | 4 | **Broadcast script** (two-host podcast) | `POST /v1/chat/completions` | `btl-2` | Two-host "From Your Notes" dialogue grounded in one note; a long note is split into ordered segments so the episode covers it **end-to-end** (multiple grounded calls per episode), cached by content hash |
@@ -354,9 +373,10 @@ A 2-minute walkthrough hitting the hero moments, in order:
 
 ## 13. Trust & Grounding Promise (Non-Negotiable)
 
-- ✅ No answer ever comes from outside the student's saved notes — it's **retrieval-gated**.
+- ✅ **Grounded by default:** unless the student opts in, every answer is **retrieval-gated** — drawn only from saved notes, or not given at all.
 - ✅ Every grounded answer shows its source via the **📌 From your notes** tag, tappable to the note.
-- ✅ If nothing can be grounded, readIQ says *"I don't have that in your notes yet."* — it never invents.
+- ✅ If nothing can be grounded, readIQ says *"I don't have that in your notes yet."* — it never quietly passes off outside knowledge as coming from a note.
+- ✅ **Stepping outside the notes is always the student's explicit choice** — the "answer beyond your notes" option is clearly labeled as *not* from their notes, closed with real references, and never wears the 📌 tag.
 - ✅ Notes stay on the device (**SQLite**) as the source of truth; only what's needed is sent to BTL to be answered. We're honest about this in-app.
 - ✅ The BTL API key is read in exactly one file, never logged, and never shipped to any analytics service.
 
@@ -367,7 +387,7 @@ A 2-minute walkthrough hitting the hero moments, in order:
 | Requirement | Detail |
 |---|---|
 | **GitHub / public code link** | https://github.com/muhaj-dev/ReadIQ |
-| **Short description** | An AI study companion that answers only from a student's own saved notes and proves it with a "📌 From your notes" citation — powered end-to-end by the BTL Runtime |
+| **Short description** | An AI study companion that learns from a student's own saved notes and grounds its answers in them — proving each with a "📌 From your notes" citation, and stepping beyond the notes only when the student explicitly asks — powered end-to-end by the BTL Runtime |
 | **BTL runtime endpoint(s) used** | `POST /v1/chat/completions` — streamed (grounded Ask ★) and non-streamed (quiz JSON, note/lecture summary, podcast script, **scan OCR** & **PDF extraction** via `gemini-2.5-flash` vision) · `POST /v1/embeddings` (`text-embedding-3-small`, semantic retrieval) · `GET /v1/models` (health check) |
 | **2-minute demo video** | https://youtube.com/shorts/ufTUfARxDho |
 | **Team name** | **studiome** |

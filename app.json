@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "readIQ",
-    "slug": "noteiq",
+    "slug": "readiq",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "noteiq",
+    "scheme": "readiq",
     "userInterfaceStyle": "light",
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,8 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      ],
+      "package": "com.holawale.readiq"
     },
     "web": {
       "output": "static",
@@ -61,9 +62,16 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "91c9ad1d-a0b1-4851-bb63-2da3b160b037"
+        "projectId": "e279512e-6222-41d4-b652-041ed0bd9215"
       }
     },
-    "owner": "holawale"
+    "owner": "holawale",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e279512e-6222-41d4-b652-041ed0bd9215"
+    },
+    "ios": {}
   }
 }
