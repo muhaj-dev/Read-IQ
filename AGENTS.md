@@ -6,11 +6,11 @@ You write clean, simple, maintainable code. You prioritize clarity over unnecess
 
 You should think like a senior mobile developer, but explain and implement like someone building a practical learning project.
 
------
+---
 
 ## Project Overview
 
-We are building **AI University Companion** — a calm, organized AI study partner that remembers a student's notes and answers questions using **only what they have saved**.
+We are building **readIQ** — a calm, organized AI study partner that remembers a student's notes and answers questions using **only what they have saved**.
 
 The app helps stressed, time-poor university students revise by turning their own material into a trustworthy study tool:
 
@@ -22,66 +22,87 @@ The app helps stressed, time-poor university students revise by turning their ow
 - weak-topic tracking, streaks, and progress — the student improving over time
 - beautiful mobile-first UI with full light and dark mode support
 
-All intelligence flows through the **BTL Runtime** — Bad Theory Labs' OpenAI-compatible LLM gateway (`/v1/chat/completions`, `/v1/responses`, plus embeddings, retrieval & memory, tool use, and streaming). Notes are stored locally on the device as the source of truth; the runtime is used to embed, retrieve, and generate.
+All intelligence flows through the **OpenAI API**, using **GPT-5.6** for chat, vision, and generation, plus OpenAI transcription and embeddings. Notes are stored locally on the device as the source of truth; the API is used to embed, retrieve, and generate.
 
-This is built for the **BTL Runtime Hackathon** on badtheorylabs.com — July 3–5, 2026. Every submission must call the BTL runtime.
+This is built for **OpenAI Build Week** — submissions close **July 21, 2026 at 5:00 PM PT** (= **July 22, 2:00 AM Nigeria time**). Every submission must be built with **Codex** and **GPT-5.6**.
 
 ### The single most important product idea
 
 **Every answer the app gives must visibly come from a real note.** When the student sees a small "📌 From your notes" tag under an answer, they trust the app. That tag is the emotional core of the entire product. If the app cannot ground an answer in a saved note, it must say so honestly — never invent an answer.
 
+> ### Why this is our whole pitch now
+>
+> "Chat with your PDF" is the most saturated LLM app genre in existence. Judges have seen a thousand. **We are not submitting a notes app — we are submitting an AI that refuses to answer.**
+>
+> For a student revising for an exam, a confident wrong answer is worse than no answer. Every other RAG app hallucinates confidently. Ours is _engineered to decline_. Retrieval is a hard gate, not a suggestion.
+>
+> **Every engineering decision must protect the refusal.** If a feature makes it easier for the model to fill a gap from general knowledge, it is a regression even if it "works."
+
 ### Product Pillars (what judges see on screen)
 
 The design and the engineering must make each pillar visible. If a judge cannot see the pillar, we lose the point.
 
-|Pillar        |What it means                    |How the app must show it                                            |
-|--------------|---------------------------------|--------------------------------------------------------------------|
-|🧠 Memory     |The app remembers saved notes    |A live **Memory Panel** where saved notes are always visible        |
-|👁️ Attention  |It focuses on what matters       |Dashboard highlights **weak topics** & **upcoming deadlines**       |
-|⚡ Action     |It does things for the student   |Obvious buttons: **Ask a Question**, **Generate Quiz**, **Add Reminder**|
-|📈 Learning   |The student improves over time   |Progress bars, streaks, and a **topics mastered** view              |
+| Pillar       | What it means                  | How the app must show it                                                 |
+| ------------ | ------------------------------ | ------------------------------------------------------------------------ |
+| 🧠 Memory    | The app remembers saved notes  | A live **Memory Panel** where saved notes are always visible             |
+| 👁️ Attention | It focuses on what matters     | Dashboard highlights **weak topics** & **upcoming deadlines**            |
+| ⚡ Action    | It does things for the student | Obvious buttons: **Ask a Question**, **Generate Quiz**, **Add Reminder** |
+| 📈 Learning  | The student improves over time | Progress bars, streaks, and a **topics mastered** view                   |
+| 🛑 Honesty   | It admits what it doesn't know | The honest fallback is a **designed, beautiful state** — not an error    |
 
 ### Design mood
 
-Clean, modern, calm. Think **Notion + Duolingo**. One accent colour, lots of white space, rounded corners, soft shadows, and a confident **light + dark mode**. The interface must reduce exam anxiety, not add to it. Every screen answers one question instantly: *"what do I do next?"*
+Clean, modern, calm. Think **Notion + Duolingo**. One accent colour, lots of white space, rounded corners, soft shadows, and a confident **light + dark mode**. The interface must reduce exam anxiety, not add to it. Every screen answers one question instantly: _"what do I do next?"_
 
------
+---
 
-## Hackathon Submission & Judging Rubric (ALWAYS KEEP IN MIND)
+## Hackathon Submission & Judging (ALWAYS KEEP IN MIND)
 
-This is a **competition build for the BTL Runtime Hackathon**. Re-read this before starting any
-feature and weigh every engineering/design decision against how it scores.
+This is a **competition build for OpenAI Build Week**. Re-read this before starting any feature and weigh every engineering/design decision against how it scores.
+
+### ⚠️ Rules we cannot break
+
+| Requirement                    | Detail                                                                                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Deadline**                   | **July 21, 5:00 PM PT** = July 22, 2:00 AM Nigeria time. Submit ≥2h early.                                                                         |
+| **One category**               | **Education.** One project = one prize. No stacking.                                                                                               |
+| **Demo video**                 | **Under 3 minutes.** Public on YouTube. **Must include audio** covering what we built **and how we used Codex and GPT-5.6**. No copyrighted music. |
+| **Code repo**                  | Public with a license, **or** private + shared with `testing@devpost.com` and `build-week-event@openai.com`.                                       |
+| **README must document Codex** | **Scored.** See "The Codex Log" below.                                                                                                             |
+| **Fresh repo**                 | All commits dated inside the submission period (opened July 13). See "Why a fresh repo".                                                           |
+| **English**                    | All submission materials in English.                                                                                                               |
 
 ### What we must submit
-- GitHub repo or public code link
-- 2-minute demo video
-- Short description of what we built
-- **Which BTL runtime endpoint(s) we used** ← keep a running list as each one is wired
-- Team name + member names
 
-### 100-point rubric (optimize for this)
+- GitHub repo
+- Demo video (< 3 min, with audio narration, public on YouTube)
+- Text description of features and functionality
+- **README documenting our Codex collaboration** ← keep the log running as we build
+- Devpost submission at openai.devpost.com
 
-|Points|Criterion          |What it means for our build                                                                                                                                                     |
-|------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|**30**|Use of BTL Runtime |The biggest lever. Route as many real jobs through the runtime as possible — grounded chat, vision OCR (scan), audio transcription (record), quiz generation, embeddings/retrieval. Breadth **and** depth of runtime use wins.|
-|**25**|Usefulness         |Solve a real student pain end-to-end: notes in → trustworthy answers + quizzes + deadlines out. The "📌 From your notes" grounding is our usefulness proof.                        |
-|**20**|Technical execution|Clean, working, no crashes. The RAG grounding gate actually works. Errors handled gracefully — never a raw stack trace.                                                          |
-|**15**|Creativity         |The "answers only from your notes" trust mechanic + the note-flies-into-Memory moment.                                                                                           |
-|**10**|Presentation       |Polished light-mode UI, calm design, a crisp 2-min demo hitting Ask + Scan + Record.                                                                                             |
+### Judging criteria — four, EQUALLY weighted
 
-### Tie-breakers (in order) — build toward these
-1. **Stronger use of the BTL runtime** → use multiple endpoints and use them well (streaming, retrieval-gating, vision, audio).
-2. **More complete working demo** → every advertised feature must actually run in the demo.
-3. **Better real-world usefulness.**
-4. **Clearer submission materials.**
+> **This replaced a 100-point rubric where 30 points came from "use the runtime as much as possible."**
+> **That lever no longer exists.** Do not route work through GPT-5.6 to inflate a call count — it is
+> not scored, and it now costs real money. Route work through GPT-5.6 when it is the _right tool_, and
+> use it _deeply_.
+
+| Criterion                        | What it means for our build                                                                                                                                                                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Technological Implementation** | How thoroughly and skillfully does it use GPT-5.6? Does the code reflect genuine effort and a working, non-trivial implementation? Our answer: real vector RAG with a retrieval gate, vision, audio, structured generation — not one API call in a trench coat.                 |
+| **Design**                       | A **working, runnable** project with a **complete, coherent product experience** — not a proof of concept. Our answer: onboarding, 5 tabs, 4 add-methods, quizzes, deadlines, streaks, light+dark. We already have this. **This is our strongest criterion — do not break it.** |
+| **Potential Impact**             | A **credible, specific** case for solving a real problem for a **real audience**. Our answer: students who fail not from lack of effort but from revising the wrong material — and who cannot afford a confidently wrong answer the night before an exam.                       |
+| **Quality of the Idea**          | **Creative, non-obvious** use of GPT-5.6 + genuine understanding of the problem space. **This is our weakest criterion.** Our answer is the refusal mechanic. Lead with it everywhere.                                                                                          |
 
 ### Standing implications for how we build
-- Bias every "should we call AI here?" decision toward **yes, via the BTL runtime** — it is 30 pts plus the first tie-breaker.
-- Keep a running list of BTL endpoints used (chat · vision · audio · embeddings) — it's a required submission field and the top score driver.
-- Prioritize a **complete, crash-free demo path** over breadth of half-working features.
-- Hero moments for the 2-min video: **Ask (grounded answer + tag)** and **Scan/Record (AI reads your material)**.
 
------
+- **Depth over breadth.** One deeply-engineered grounding pipeline beats six shallow API calls.
+- **Protect the complete-product score.** A crash-free, fully-working demo path beats a new half-built feature. If a feature isn't finished by Day 5, cut it.
+- **The refusal is the pitch.** Any polish spent making the honest fallback beautiful is polish spent on our weakest criterion. It is high-leverage.
+- **Hero moments for the video:** (1) **Ask → grounded answer + tag**, (2) **the refusal** — ask something the notes don't cover and show it decline, (3) **Scan/Record** — AI reads your material.
+- **Keep the Codex log current from Day 1.** Written on the last day from memory, it will be generic and score badly.
+
+---
 
 ## Tech Stack
 
@@ -94,7 +115,7 @@ Use the following stack:
 - NativeWind / Tailwind CSS
 - Zustand
 - AsyncStorage
-- **BTL Runtime** — OpenAI-compatible gateway for all AI (chat, embeddings, retrieval, transcription, vision/OCR)
+- **OpenAI API** — GPT-5.6 for chat/vision/generation, plus transcription and embeddings
 - SQLite (via `expo-sqlite`) for local note, chunk, deadline, and quiz storage
 - `expo-document-picker` for file (PDF / doc) upload
 - `expo-camera` + `expo-image-picker` for photo / scan (OCR)
@@ -102,11 +123,11 @@ Use the following stack:
 - `expo-notifications` for deadline reminders
 - `@expo-google-fonts/inter` (or Plus Jakarta Sans) for the geometric-sans typeface
 
-The BTL runtime is OpenAI-compatible, so the standard `openai` JS client (pointed at the BTL base URL) or plain `fetch` both work. Prefer a single thin client in `lib/btl.ts`.
+Use the standard `openai` JS client or plain `fetch`. Prefer a single thin client in `lib/ai.ts`.
 
 Do not introduce new major libraries unless there is a strong reason. Always ask before installing.
 
------
+---
 
 ## Development Philosophy
 
@@ -123,7 +144,7 @@ For every feature:
 1. Refactor only when repetition or complexity appears.
 1. Keep the app easy to teach and explain.
 
------
+---
 
 ## Decision Making & Clarifications
 
@@ -141,7 +162,7 @@ Example:
 
 Do not install or use new libraries without user approval.
 
------
+---
 
 ## Architecture Guidelines
 
@@ -169,6 +190,7 @@ app/
     result.tsx         — score summary + topics to review + retry
   note/
     [id].tsx           — full note content
+    pdf.tsx            — original PDF render + annotations
   deadline/
     add.tsx            — add / edit a deadline + reminder
   settings.tsx         — theme, AI model, about
@@ -181,7 +203,7 @@ data/
 hooks/
   useTheme.ts          — returns current theme colours
 lib/
-  btl.ts
+  ai.ts                — OpenAI client (was btl.ts)
   chat.ts
   embeddings.ts
   retrieval.ts
@@ -214,27 +236,28 @@ Screens compose components and call hooks/stores. They do not contain large UI b
 
 The bottom navigation has exactly **5 tabs**: HOME · ASK · MEMORY · QUIZ · DEADLINES — plus a central **+ Add Note** action button that launches the Add Note flow. There are **more than 7 screens**; the flows below break into sub-screens.
 
-|Screen           |Route                     |Tab      |Description                                                                                     |
-|-----------------|--------------------------|---------|-----------------------------------------------------------------------------------------------|
-|Welcome          |`(onboarding)/welcome`    |—        |App name, calm one-line promise, 3 value rows (Remembers · Quizzes · Reminds), GET STARTED, 1/3 dots|
-|About You        |`(onboarding)/about`      |—        |Friendly form: name + what they're studying for. "Saved only on your device." BACK + CONTINUE  |
-|First Note       |`(onboarding)/first-note` |—        |The magic first moment: paste box, animates into Memory Panel. "Start Studying."                |
-|Dashboard        |`(tabs)/index`            |HOME     |Warm greeting + streak, quick stat cards, Upcoming Deadlines, Weak Topics, Ask + Generate Quiz  |
-|Ask / Chat ★     |`(tabs)/ask`              |ASK      |Chat; answers show "📌 From your notes" tag + source note; honest empty-note fallback           |
-|Memory Panel     |`(tabs)/memory`           |MEMORY   |Scrollable list of every saved note as a card (title, source, date), search/filter bar          |
-|Quiz Home        |`(tabs)/quiz`             |QUIZ     |Choose format (flashcard / MCQ), pick topic/note, Generate Quiz                                 |
-|Deadlines        |`(tabs)/deadlines`        |DEADLINES|List/calendar of due dates, countdown, reminder toggle, urgency colours, Add Reminder           |
-|Add — Choose     |`add/index`               |—        |Four big option cards: Paste · Upload · Photo/Scan · Record class                               |
-|Add — Paste      |`add/paste`               |—        |Large text box, fastest path                                                                    |
-|Add — Upload     |`add/upload`              |—        |Pick PDF/doc, show filename + reading progress, extract text                                    |
-|Add — Scan       |`add/scan`                |—        |Camera or image pick → OCR; show image + extracted text side by side to confirm                 |
-|Add — Record     |`add/record`             |—        |Record live audio; waveform + timer; editable transcript when finished                          |
-|Add — Confirm    |`add/confirm`             |—        |Shared end state: preview text + optional title + subject tag + SAVE TO MEMORY                   |
-|Quiz Active      |`quiz/active`             |—        |One question per screen, progress bar, flip flashcard / tap MCQ, immediate green/red feedback    |
-|Quiz Result      |`quiz/result`             |—        |Score summary, "topics to review" suggestion, retry button, source note per question            |
-|Note Detail      |`note/[id]`               |—        |Full note content; opened from Memory or from a "From your notes" tag                            |
-|Add Deadline     |`deadline/add`            |—        |Title, subject, due date, reminder toggle                                                        |
-|Settings         |`settings`                |—        |Profile card, AI Model section, Theme toggle, About (reached from Dashboard header gear)         |
+| Screen        | Route                     | Tab       | Description                                                                                          |
+| ------------- | ------------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
+| Welcome       | `(onboarding)/welcome`    | —         | App name, calm one-line promise, 3 value rows (Remembers · Quizzes · Reminds), GET STARTED, 1/3 dots |
+| About You     | `(onboarding)/about`      | —         | Friendly form: name + what they're studying for. BACK + CONTINUE                                     |
+| First Note    | `(onboarding)/first-note` | —         | The magic first moment: paste box, animates into Memory Panel. "Start Studying."                     |
+| Dashboard     | `(tabs)/index`            | HOME      | Warm greeting + streak, quick stat cards, Upcoming Deadlines, Weak Topics, Ask + Generate Quiz       |
+| Ask / Chat ★  | `(tabs)/ask`              | ASK       | Chat; answers show "📌 From your notes" tag + source note; honest empty-note fallback                |
+| Memory Panel  | `(tabs)/memory`           | MEMORY    | Scrollable list of every saved note as a card (title, source, date), search/filter bar               |
+| Quiz Home     | `(tabs)/quiz`             | QUIZ      | Choose format (flashcard / MCQ), pick topic/note, Generate Quiz                                      |
+| Deadlines     | `(tabs)/deadlines`        | DEADLINES | List/calendar of due dates, countdown, reminder toggle, urgency colours, Add Reminder                |
+| Add — Choose  | `add/index`               | —         | Four big option cards: Paste · Upload · Photo/Scan · Record class                                    |
+| Add — Paste   | `add/paste`               | —         | Large text box, fastest path                                                                         |
+| Add — Upload  | `add/upload`              | —         | Pick PDF/doc, show filename + reading progress, extract text                                         |
+| Add — Scan    | `add/scan`                | —         | Camera or image pick → OCR; show image + extracted text side by side to confirm                      |
+| Add — Record  | `add/record`              | —         | Record live audio; waveform + timer; editable transcript when finished                               |
+| Add — Confirm | `add/confirm`             | —         | Shared end state: preview text + optional title + subject tag + SAVE TO MEMORY                       |
+| Quiz Active   | `quiz/active`             | —         | One question per screen, progress bar, flip flashcard / tap MCQ, immediate green/red feedback        |
+| Quiz Result   | `quiz/result`             | —         | Score summary, "topics to review" suggestion, retry button, source note per question                 |
+| Note Detail   | `note/[id]`               | —         | Full note content; opened from Memory or from a "From your notes" tag                                |
+| PDF Reader    | `note/[id]/pdf`           | —         | Original PDF render + highlight/comment annotations                                                  |
+| Add Deadline  | `deadline/add`            | —         | Title, subject, due date, reminder toggle                                                            |
+| Settings      | `settings`                | —         | Profile card, AI Model section, Theme toggle, About (reached from Dashboard header gear)             |
 
 #### Navigation Structure
 
@@ -255,7 +278,7 @@ The Memory Panel may render as a persistent side panel on large screens (tablet/
 but on phones it is a tab. Design the tab version first.
 ```
 
------
+---
 
 ## File Length & Component Extraction Rule (CRITICAL)
 
@@ -276,11 +299,11 @@ Logic, styling, and animations belong in component files — never in screens.
 Before writing any screen, **plan the component breakdown first**.
 List which components you will create, build each one, then assemble the screen.
 
------
+---
 
 ## Light & Dark Mode System (CRITICAL)
 
-AI University Companion supports both light and dark modes. This is a core product feature, not optional — students revise late at night before exams, so dark mode is essential.
+readIQ supports both light and dark modes. This is a core product feature, not optional — students revise late at night before exams, so dark mode is essential.
 
 ### How theming works
 
@@ -294,85 +317,81 @@ AI University Companion supports both light and dark modes. This is a core produ
 
 ```ts
 // hooks/useTheme.ts
-import { useColorScheme } from 'react-native';
-import { useThemeStore } from '@/store/useThemeStore';
-import { lightColors, darkColors } from '@/constants/colors';
+import { useColorScheme } from "react-native";
+import { useThemeStore } from "@/store/useThemeStore";
+import { lightColors, darkColors } from "@/constants/colors";
 
 export const useTheme = () => {
   const systemScheme = useColorScheme();
   const { preference } = useThemeStore();
-  const scheme = preference === 'system' ? systemScheme : preference;
-  return scheme === 'dark' ? darkColors : lightColors;
+  const scheme = preference === "system" ? systemScheme : preference;
+  return scheme === "dark" ? darkColors : lightColors;
 };
 ```
 
 ### Color Tokens
-
-> These are the **designer-brief starter tokens** (Notion + Duolingo feel, indigo accent). The final
-> hackathon theme colours will be supplied later — when they arrive, change **only** `constants/colors.ts`.
-> Because nothing else in the app hardcodes hex, re-theming is free.
 
 ```ts
 // constants/colors.ts
 
 export const lightColors = {
   // Backgrounds
-  bgPrimary:    '#ffffff',   // Main screen background
-  bgAlt:        '#f8f9fd',   // Alternate light background
-  bgCard:       '#f6f7fc',   // Note / quiz / deadline card background
-  bgCardInner:  '#eceef5',   // Inner / nested card background
+  bgPrimary: "#ffffff", // Main screen background
+  bgAlt: "#f8f9fd", // Alternate light background
+  bgCard: "#f6f7fc", // Note / quiz / deadline card background
+  bgCardInner: "#eceef5", // Inner / nested card background
 
   // Borders
-  border:       '#e2e4ea',   // All card borders and dividers
+  border: "#e2e4ea", // All card borders and dividers
 
   // Accent (indigo — one accent, used sparingly)
-  accent:       '#5b5bd6',   // Primary buttons, links, highlights, the "From your notes" tag
-  accentSoft:   '#ececfb',   // Selected states, accent backgrounds, tag background
+  accent: "#5b5bd6", // Primary buttons, links, highlights, the "From your notes" tag
+  accentSoft: "#ececfb", // Selected states, accent backgrounds, tag background
 
   // Status
-  success:      '#22c55e',   // Correct answers, mastered topics, streaks
-  warning:      '#f59e0b',   // Soon-due deadlines, weak topics
-  danger:       '#ef4444',   // This-week deadlines, failed topics, "wrong" feedback
+  success: "#22c55e", // Correct answers, mastered topics, streaks
+  warning: "#f59e0b", // Soon-due deadlines, weak topics
+  danger: "#ef4444", // This-week deadlines, failed topics, "wrong" feedback
 
   // Text
-  textPrimary:  '#1a1a2e',   // Headings and body
-  textSecondary:'#6b7280',   // Secondary text, timestamps
-  textMuted:    '#a1a7b3',   // Dimmed — placeholders, inactive tabs
+  textPrimary: "#1a1a2e", // Headings and body
+  textSecondary: "#6b7280", // Secondary text, timestamps
+  textMuted: "#a1a7b3", // Dimmed — placeholders, inactive tabs
 
   // Tab bar
-  tabActive:    '#1a1a2e',
-  tabInactive:  '#a1a7b3',
-  tabDot:       '#5b5bd6',
+  tabActive: "#1a1a2e",
+  tabInactive: "#a1a7b3",
+  tabDot: "#5b5bd6",
 };
 
 export const darkColors = {
   // Backgrounds
-  bgPrimary:    '#14141f',   // Main screen background
-  bgAlt:        '#0f0f18',   // Alternate dark background
-  bgCard:       '#1e1e2e',   // Card background
-  bgCardInner:  '#181826',   // Inner / nested card background
+  bgPrimary: "#14141f", // Main screen background
+  bgAlt: "#0f0f18", // Alternate dark background
+  bgCard: "#1e1e2e", // Card background
+  bgCardInner: "#181826", // Inner / nested card background
 
   // Borders
-  border:       '#2a2a3a',   // All card borders and dividers
+  border: "#2a2a3a", // All card borders and dividers
 
   // Accent (lifted indigo for dark-mode contrast)
-  accent:       '#7c7cf0',   // Primary buttons, links, highlights, the "From your notes" tag
-  accentSoft:   '#2a2a4a',   // Selected states, accent backgrounds, tag background
+  accent: "#7c7cf0", // Primary buttons, links, highlights, the "From your notes" tag
+  accentSoft: "#2a2a4a", // Selected states, accent backgrounds, tag background
 
   // Status
-  success:      '#4ade80',   // Correct answers, mastered topics, streaks
-  warning:      '#fbbf24',   // Soon-due deadlines, weak topics
-  danger:       '#f87171',   // This-week deadlines, failed topics, "wrong" feedback
+  success: "#4ade80", // Correct answers, mastered topics, streaks
+  warning: "#fbbf24", // Soon-due deadlines, weak topics
+  danger: "#f87171", // This-week deadlines, failed topics, "wrong" feedback
 
   // Text
-  textPrimary:  '#f4f4f8',   // Headings and body
-  textSecondary:'#9aa0ad',   // Secondary text, timestamps
-  textMuted:    '#6b7280',   // Dimmed — placeholders, inactive tabs
+  textPrimary: "#f4f4f8", // Headings and body
+  textSecondary: "#9aa0ad", // Secondary text, timestamps
+  textMuted: "#6b7280", // Dimmed — placeholders, inactive tabs
 
   // Tab bar
-  tabActive:    '#f4f4f8',
-  tabInactive:  '#6b7280',
-  tabDot:       '#7c7cf0',
+  tabActive: "#f4f4f8",
+  tabInactive: "#6b7280",
+  tabDot: "#7c7cf0",
 };
 
 export type ColorTokens = typeof lightColors;
@@ -382,21 +401,23 @@ export type ColorTokens = typeof lightColors;
 
 ```tsx
 // CORRECT — always use theme tokens
-import { useTheme } from '@/hooks/useTheme';
+import { useTheme } from "@/hooks/useTheme";
 
 export const NoteCard = () => {
   const colors = useTheme();
   return (
-    <View style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+    <View
+      style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+    >
       <Text style={{ color: colors.textPrimary }}>Cell Biology Lecture 4</Text>
     </View>
   );
 };
 
 // WRONG — never hardcode colors
-<View style={{ backgroundColor: '#1e1e2e' }}>
-  <Text style={{ color: '#ffffff' }}>Cell Biology Lecture 4</Text>
-</View>
+<View style={{ backgroundColor: "#1e1e2e" }}>
+  <Text style={{ color: "#ffffff" }}>Cell Biology Lecture 4</Text>
+</View>;
 ```
 
 ### NativeWind and theming
@@ -425,7 +446,7 @@ The Settings screen has a theme toggle. When the user switches theme:
 1. Persist to AsyncStorage with key 'theme_preference'
 1. All screens rerender automatically via useTheme hook
 
------
+---
 
 ## UI Implementation Rules (VERY IMPORTANT)
 
@@ -446,9 +467,9 @@ When a design image is provided you MUST:
 
 Do not approximate. Do not simplify unless explicitly asked.
 
-**Polish budget:** the **Ask / Chat** screen (with the "From your notes" tag) and the **Memory Panel** are what win the hackathon. Make these two screens flawless before touching anything else. The **Scan** and **Record** add-note methods are the strongest demo moments — give them real polish too.
+**Polish budget:** the **Ask / Chat** screen (the "From your notes" tag **and the honest fallback**) and the **Memory Panel** are what win. Make these flawless before touching anything else. **The refusal state is not an error state — design it like a feature**, because it _is_ the feature. The **Scan** and **Record** add-note methods are the strongest secondary demo moments.
 
------
+---
 
 ## Design System (Official Tokens — Do Not Change Without Approval)
 
@@ -459,23 +480,23 @@ Friendly geometric sans — **Inter** or **Plus Jakarta Sans**. One family, 2–
 ```ts
 // constants/typography.ts
 export const fonts = {
-  regular:  'Inter_400Regular',
-  medium:   'Inter_500Medium',
-  semibold: 'Inter_600SemiBold',
-  bold:     'Inter_700Bold',
+  regular: "Inter_400Regular",
+  medium: "Inter_500Medium",
+  semibold: "Inter_600SemiBold",
+  bold: "Inter_700Bold",
 };
 
 export const typography = {
-  h1:      { fontFamily: 'Inter_700Bold',    fontSize: 32, lineHeight: 38 },
-  h2:      { fontFamily: 'Inter_700Bold',    fontSize: 28, lineHeight: 34 },
-  h3:      { fontFamily: 'Inter_700Bold',    fontSize: 24, lineHeight: 30 },
-  h4:      { fontFamily: 'Inter_600SemiBold',fontSize: 18, lineHeight: 24 },
-  bodyLg:  { fontFamily: 'Inter_400Regular', fontSize: 16, lineHeight: 24 },
-  bodyMd:  { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 22 },
-  bodySm:  { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 20 },
-  label:   { fontFamily: 'Inter_500Medium',  fontSize: 12, letterSpacing: 0.4 },
-  caption: { fontFamily: 'Inter_500Medium',  fontSize: 11, letterSpacing: 0.4 },
-  tab:     { fontFamily: 'Inter_500Medium',  fontSize: 11, letterSpacing: 0.3 },
+  h1: { fontFamily: "Inter_700Bold", fontSize: 32, lineHeight: 38 },
+  h2: { fontFamily: "Inter_700Bold", fontSize: 28, lineHeight: 34 },
+  h3: { fontFamily: "Inter_700Bold", fontSize: 24, lineHeight: 30 },
+  h4: { fontFamily: "Inter_600SemiBold", fontSize: 18, lineHeight: 24 },
+  bodyLg: { fontFamily: "Inter_400Regular", fontSize: 16, lineHeight: 24 },
+  bodyMd: { fontFamily: "Inter_400Regular", fontSize: 15, lineHeight: 22 },
+  bodySm: { fontFamily: "Inter_400Regular", fontSize: 13, lineHeight: 20 },
+  label: { fontFamily: "Inter_500Medium", fontSize: 12, letterSpacing: 0.4 },
+  caption: { fontFamily: "Inter_500Medium", fontSize: 11, letterSpacing: 0.4 },
+  tab: { fontFamily: "Inter_500Medium", fontSize: 11, letterSpacing: 0.3 },
 };
 ```
 
@@ -508,6 +529,13 @@ Minimum touch target: 44 × 44pt
 - Background: `accentSoft` · text/icon: `accent` · fully rounded (999px) · tappable → opens `note/[id]`
 - Must feel calm, clear, and credible. It is the visible proof of trust.
 
+**HonestFallback (the second most important — this is our differentiator):**
+
+- Shown when retrieval finds nothing above threshold. **Never styled as an error.**
+- Calm copy: _"I don't have that in your notes yet."_ + a clear **Add a note** CTA
+- Uses `textSecondary` and `accentSoft` — never `danger`. This is the app being trustworthy, not the app failing.
+- Consider a subtle, warm illustration. This is the state judges will remember.
+
 **SourceBadge (on note cards):**
 
 - PASTED: textMuted border + text
@@ -518,13 +546,13 @@ Minimum touch target: 44 × 44pt
 **DeadlineCard urgency:**
 
 - THIS WEEK: danger border + text
-- SOON:      warning border + text
-- LATER:     textMuted border + text
+- SOON: warning border + text
+- LATER: textMuted border + text
 
 **Quiz feedback:**
 
 - CORRECT: success border + text + subtle success background
-- WRONG:   danger (soft) border + text, and reveal the correct answer
+- WRONG: danger (soft) border + text, and reveal the correct answer
 
 **WeakTopicChip:**
 
@@ -541,7 +569,7 @@ Minimum touch target: 44 × 44pt
 - Deadlines: "No deadlines saved — add your first exam date."
 - Add Note: "Add your first note — paste it, upload it, snap a photo, or record your class."
 
------
+---
 
 ## Image Rule
 
@@ -555,8 +583,8 @@ Before using any image asset:
 
 ```ts
 // constants/images.ts
-import logo from '@/assets/images/logo.png';
-import onboarding from '@/assets/images/onboarding.png';
+import logo from "@/assets/images/logo.png";
+import onboarding from "@/assets/images/onboarding.png";
 
 export const images = { logo, onboarding };
 ```
@@ -567,7 +595,7 @@ export const images = { logo, onboarding };
 
 Never import image assets directly inside screens or components.
 
------
+---
 
 ## Styling Rules
 
@@ -579,8 +607,14 @@ Use StyleSheet or inline styles for: colors (always from useTheme), shadows, ani
 ```tsx
 // Layout with NativeWind, colors with StyleSheet
 <View className="flex-1 px-5">
-  <View style={{ backgroundColor: colors.bgCard, borderColor: colors.border,
-                 borderWidth: 1, borderRadius: 16 }}>
+  <View
+    style={{
+      backgroundColor: colors.bgCard,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 16,
+    }}
+  >
     <Text style={{ ...typography.bodyMd, color: colors.textPrimary }}>
       Content
     </Text>
@@ -592,25 +626,25 @@ Check the NativeWind version in package.json before using any NativeWind API.
 Do not upgrade NativeWind without user approval.
 Reference: <https://www.nativewind.dev/v5/llms-full.txt>
 
------
+---
 
 ## Style Exception Rules
 
-|Component             |Why                            |Use Instead                    |
-|----------------------|-------------------------------|-------------------------------|
-|`SafeAreaView`        |className not supported        |Inline styles or StyleSheet    |
-|`Button`              |Cannot customize with className|`TouchableOpacity`             |
-|`KeyboardAvoidingView`|Behavior props                 |Inline styles or StyleSheet    |
-|`Modal`               |visible, transparent props     |Inline styles                  |
-|`ScrollView`          |contentContainerStyle          |StyleSheet                     |
-|`TextInput`           |underlineColorAndroid          |Inline styles                  |
-|`Animated.View`       |Animated values                |StyleSheet                     |
-|Dynamic styles        |Runtime calculation            |StyleSheet.create() or inline  |
-|Shadows               |iOS/Android differ             |StyleSheet with platform checks|
-|Transforms            |Complex combinations           |StyleSheet                     |
-|Theme colors          |Dynamic values                 |StyleSheet with useTheme()     |
+| Component              | Why                             | Use Instead                     |
+| ---------------------- | ------------------------------- | ------------------------------- |
+| `SafeAreaView`         | className not supported         | Inline styles or StyleSheet     |
+| `Button`               | Cannot customize with className | `TouchableOpacity`              |
+| `KeyboardAvoidingView` | Behavior props                  | Inline styles or StyleSheet     |
+| `Modal`                | visible, transparent props      | Inline styles                   |
+| `ScrollView`           | contentContainerStyle           | StyleSheet                      |
+| `TextInput`            | underlineColorAndroid           | Inline styles                   |
+| `Animated.View`        | Animated values                 | StyleSheet                      |
+| Dynamic styles         | Runtime calculation             | StyleSheet.create() or inline   |
+| Shadows                | iOS/Android differ              | StyleSheet with platform checks |
+| Transforms             | Complex combinations            | StyleSheet                      |
+| Theme colors           | Dynamic values                  | StyleSheet with useTheme()      |
 
------
+---
 
 ## UI Quality Bar
 
@@ -632,7 +666,7 @@ Use:
 - simple Animated transitions (especially the note "flying into" the Memory Panel)
 - friendly empty states
 
------
+---
 
 ## data/
 
@@ -644,7 +678,7 @@ data/
   promptTemplates.ts   — system prompt templates (grounded chat, quiz gen, OCR cleanup)
 ```
 
------
+---
 
 ## store/
 
@@ -662,27 +696,29 @@ store/
 
 Persist lightweight values with AsyncStorage (profile, settings, theme). Notes, chunks, embeddings, deadlines, and quiz history go to SQLite.
 
------
+---
 
 ## lib/
 
 ```
 lib/
-  btl.ts             — BTL runtime client init (base URL + scoped API key), OpenAI-compatible
+  ai.ts              — OpenAI client init (base URL + key via proxy)  [renamed from btl.ts]
   chat.ts            — grounded chat: retrieve → build context → completion with citations
-  embeddings.ts      — embed text via runtime, cosine similarity helper
+  embeddings.ts      — embed text via OpenAI, cosine similarity helper
   retrieval.ts       — chunk notes, store/query vectors, top-K retrieval
   quizgen.ts         — generate flashcards / MCQs from notes (structured JSON)
-  ocr.ts             — image → text via a vision model through the gateway
-  transcription.ts   — class audio → text (ASR) through the gateway
+  ocr.ts             — image → text via GPT-5.6 vision
+  transcription.ts   — class audio → text via OpenAI transcription
   files.ts           — extract text from uploaded PDF / doc
+  docx-extract.ts    — local .docx text extraction (jszip) — KEEP, still correct
+  document-extract.ts— orchestrator: routes each picked file to the right extractor
   db.ts              — SQLite helpers (never write raw SQL in screens)
   cn.ts              — NativeWind class merge utility
 ```
 
-The scoped BTL API key lives in an env var (see BTL Runtime Rules) and is read **only** inside `lib/btl.ts`. No other file references it. Never commit the key.
+The API key never lives in the app — see "API Key Security" below. `lib/ai.ts` points at our proxy.
 
------
+---
 
 ## State Management Rules
 
@@ -691,7 +727,7 @@ The scoped BTL API key lives in an env var (see BTL Runtime Rules) and is read *
 - AsyncStorage: lightweight persistence (profile, settings, theme)
 - SQLite: notes, chunks/embeddings, deadlines, quiz history
 
------
+---
 
 ## TypeScript Rules
 
@@ -699,7 +735,7 @@ Use TypeScript strictly. Avoid `any`. Keep types simple.
 
 ```ts
 // types/note.ts
-export type NoteSource = 'paste' | 'file' | 'scan' | 'voice';
+export type NoteSource = "paste" | "file" | "scan" | "voice";
 
 export type Note = {
   id: string;
@@ -714,11 +750,11 @@ export type NoteChunk = {
   id: string;
   noteId: string;
   text: string;
-  embedding: number[];   // JSON float array, for cosine similarity retrieval
+  embedding: number[]; // JSON float array, for cosine similarity retrieval
 };
 
 // types/chat.ts
-export type Role = 'user' | 'assistant';
+export type Role = "user" | "assistant";
 
 export type Citation = {
   noteId: string;
@@ -730,20 +766,20 @@ export type ChatMessage = {
   id: string;
   role: Role;
   content: string;
-  grounded: boolean;          // true only when backed by retrieved notes
-  citations: Citation[];      // shown as "📌 From your notes" tags
+  grounded: boolean; // true only when backed by retrieved notes
+  citations: Citation[]; // shown as "📌 From your notes" tags
   createdAt: string;
 };
 
 // types/quiz.ts
-export type QuizFormat = 'flashcard' | 'mcq';
+export type QuizFormat = "flashcard" | "mcq";
 
 export type QuizQuestion = {
   id: string;
   format: QuizFormat;
   prompt: string;
   answer: string;
-  options?: string[];         // MCQ only
+  options?: string[]; // MCQ only
   sourceNoteId: string;
   sourceNoteTitle: string;
 };
@@ -751,12 +787,12 @@ export type QuizQuestion = {
 export type QuizResult = {
   total: number;
   correct: number;
-  weakTopics: string[];       // subjects/topics to review
+  weakTopics: string[]; // subjects/topics to review
   questions: QuizQuestion[];
 };
 
 // types/deadline.ts
-export type Urgency = 'thisWeek' | 'soon' | 'later';
+export type Urgency = "thisWeek" | "soon" | "later";
 
 export type Deadline = {
   id: string;
@@ -764,23 +800,23 @@ export type Deadline = {
   subject: string | null;
   dueDate: string;
   reminderOn: boolean;
-  urgency: Urgency;           // derived from dueDate
+  urgency: Urgency; // derived from dueDate
 };
 
 // types/user.ts
 export type UserProfile = {
   name: string;
-  studyingFor: string;        // course or exam
+  studyingFor: string; // course or exam
   streak: number;
   createdAt: string;
 };
 
 // types/theme.ts
-export type ThemePreference = 'light' | 'dark' | 'system';
-export type ColorTokens = typeof import('@/constants/colors').lightColors;
+export type ThemePreference = "light" | "dark" | "system";
+export type ColorTokens = typeof import("@/constants/colors").lightColors;
 ```
 
------
+---
 
 ## Feature Implementation Rules
 
@@ -793,91 +829,103 @@ When the user asks to build a feature:
 1. Follow existing patterns
 1. Ensure feature works end-to-end
 1. Fix errors before finishing
+1. **Append a line to `NOTES.md`** — what Codex did, what we decided, and why
+
+### Why a fresh repo (READ THIS)
+
+The existing readIQ repo's last commit is dated **2026-07-07** — before the Build Week submission period opened on **July 13**. Build Week rules require pre-existing projects to prove Codex/GPT-5.6 use _inside_ the submission period with timestamped session logs or dated commit history, and to clearly document prior vs. new work.
+
+**We are building in a fresh repo, committing from Day 1 forward.** We own our prior design work and reuse our own patterns freely — this is our code. But the commit history must be unambiguous.
+
+**Be honest about the lineage in the README.** "We built this on a different runtime and rebuilt it on GPT-5.6, which unlocked real vector retrieval and native audio that our previous gateway could not do" is a _strength_: it demonstrates genuine understanding of the problem space, which is literally a judging criterion.
 
 ### Build Roadmap & Progress (living checklist — keep it current)
 
-This is the **process to follow**. Work top-to-bottom, one phase at a time. When a phase is done and
-tested, flip its box to `[x]` and add a one-line note. **Do not start the next phase if the current one
-is broken.** The "BTL endpoint" column is the rubric lever (30 pts + tie-breaker #1) — most remaining
-value is wiring real BTL calls behind the UI that already exists.
+Work top-to-bottom, one phase at a time. When a phase is done and tested, flip its box to `[x]` and add a one-line note. **Do not start the next phase if the current one is broken.**
 
-> **Current focus: Phase 8 — Add Note advanced** (upload/scan/record).
-> Phases 0–7 are done: UI shell, BTL client, SQLite persistence, lexical retrieval, the
-> grounded Ask ★ chat, the Dashboard/Profile real data, the grounded Quiz flow
-> (subject → BTL-generated MCQs → scoring → weak topics), and real Deadlines
-> (SQLite + urgency + calendar + dashboard preview; OS notifications deferred by choice).
+> **We have 6 days, and Phases 0–8 of the previous build already exist as working code we wrote.**
+> This is our unfair advantage. **Do not squander it by adding scope.** The migration is small; the
+> time it frees goes into Phase M3 — the thing that beats the "chat with your PDF" saturation problem.
 
-|  | Phase | What it delivers | BTL endpoint | Status |
-|--|-------|------------------|--------------|--------|
-|✅| 0 · UI shell + design system | Onboarding, tabs (home/ask/memory/quiz/profile), add flows, deadlines, note, quiz, settings — all screens + components + light theme | — | **Done** (mock data) |
-|✅| 1 · BTL client foundation | `lib/btl.ts` (env-scoped OpenAI-compatible client) + proven live calls + friendly error path | chat | **Done** |
-|✅| 2 · Persistence | `lib/db.ts` (SQLite) + `store/use-notes-store.ts` + `lib/note-view.ts`; Add-Paste/Upload/Edit/onboarding save real notes; Memory Panel + Note Details + Reader read them; delete works | — | **Done** |
-|✅| 3 · Retrieval foundation | `lib/retrieval.ts` chunk + rank; lexical scoring (catalog has no embedding model) | — (lexical) | **Done** |
-|✅| 4 · Ask / Chat ★ + "From your notes" | Grounded RAG: retrieve → **stream** answer → citations; honest empty-note fallback + "Add a note" CTA | chat (stream) | **Done** |
-|✅| 5 · Dashboard real data | `store/use-user-store.ts` (profile · streak · AI-answer count) + `hooks/use-dashboard.ts` / `use-profile.ts`; Home + Profile read real notes/user stores; honest empty states for deadlines + weak topics (their stores land in 6/7) | — | **Done** |
-|✅| 6 · Quiz flow | Generate grounded MCQs per **subject** via BTL (JSON); one-per-screen run + scoring; wrong-answer review with explanations; weak topics feed the Dashboard | chat (JSON) | **Done** |
-|✅| 7 · Deadlines | Real deadlines (SQLite + store); urgency + countdown derived from due date; current-month calendar with deadline dots; dashboard preview; reminder toggle (saved preference — OS notifications deferred, dependency-free by choice) | — | **Done** |
-|✅| 8 · Add Note advanced | Upload: **PDF via BTL ✓ · .docx local ✓** · Scan: **BTL vision OCR ✓** · Record: **OpenAI Whisper ✓ (BTL can't transcribe) → btl-2 summary** | vision · (Whisper) | **Done** |
-|⬜| 9 · Settings + polish + submission | Model picker, empty states, animations, README with BTL endpoints used, 2-min demo video | — | Not started |
+|     | Phase                       | What it delivers                                                                                                                                                                   | GPT-5.6 usage                 | Status           |
+| --- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------- |
+| ⬜  | M0 · Unblock                | Devpost registration · **$100 credits form (deadline July 17, 12pm PT)** · read GPT-5.6 API docs · fresh repo, first commit                                                        | —                             | **DO TODAY**     |
+| ⬜  | M1 · Migration              | `lib/btl.ts` → `lib/ai.ts`; proxy stands up; swap chat/vision/quizgen/summary to GPT-5.6; **delete the BTL model catalog + `btl-2` references**; verify streaming shape            | chat (stream + JSON) · vision | Not started      |
+| ⬜  | M2 · **Real vector RAG**    | Replace lexical scoring with true embeddings + cosine similarity + a tuned similarity **threshold**. **This is the unlock BTL denied us.** Backfill embeddings for existing notes. | embeddings                    | Not started      |
+| ⬜  | M3 · **The differentiator** | The thing we build with the time migration saved. See "The Novelty Problem" below.                                                                                                 | tbd                           | **Decide Day 1** |
+| ⬜  | M4 · Settings + polish      | Model picker, empty-state + refusal-state polish, animations                                                                                                                       | —                             | Not started      |
+| ⬜  | M5 · Submission             | README + **Codex log**, demo video (<3 min, audio), YouTube public, Devpost submit ≥2h early                                                                                       | —                             | Not started      |
 
-**BTL endpoints used so far (submission field):** `chat/completions` — non-stream (note summary, PDF extract, **grounded quiz generation**, **scan vision OCR**) **and** stream (grounded Ask ★). Record transcription uses **OpenAI Whisper** (non-BTL — BTL has no working audio path), then btl-2 for the summary.
+**Carried forward from the previous build (already working, do not rebuild):** UI shell + design system · SQLite persistence · grounded Ask ★ with streaming + citations · Dashboard real data · grounded quiz flow (subject → MCQs → scoring → weak topics) · deadlines with urgency + calendar · Upload (PDF + local .docx via jszip) · Scan vision OCR · Record transcription · PDF Reader with geometry-based highlight/comment annotations.
 
-_Phase 4 done: `types/chat.ts`, `lib/chat.ts` (grounded RAG orchestrator), `store/use-chat-store.ts`, and `btlChatStream` in `lib/btl.ts` (SSE via `expo/fetch`) added; Ask screen streams answers from saved notes, tags each with "From your notes", and shows an honest fallback + "Add a note" CTA when retrieval finds nothing. Streaming shape verified live against `btl-2` (7 deltas, standard `choices[0].delta.content`). lint + typecheck green._
+### The Novelty Problem (M3 — read before deciding)
 
-_Phase 5 done: `types/user.ts`, `lib/study-stats.ts` (pure streak + semester math, unit-tested), `store/use-user-store.ts` (AsyncStorage), `hooks/use-dashboard.ts` + `hooks/use-profile.ts` added. Onboarding About now saves name/course/goal; `_layout` loads the profile and advances the day-streak once per calendar day; grounded Ask ★ answers increment a persisted "AI Answers" count. Home shows live Notes count + AI Answers + streak + semester progress (derived from account age) and honest empty states (deadlines, weak topics) that route to Add Deadline / Quiz; Profile mirrors the same real stats. Quiz Score is an honest "—" until Phase 6. lint + typecheck green; streak/semester helpers pass 16/16 assertions._
+**Our weakest criterion is Quality of the Idea.** "Chat with your notes" is the most common LLM app there is. Our refusal mechanic is a real differentiator but it is a _mechanic_, not a _feature_ — we need something a judge has not seen.
 
-_Phase 6 done: `types/quiz.ts`, `lib/quizgen.ts` (grounded MCQ generation — plain chat/JSON via `btl-2`, robust parser, thin-content gate), `lib/quiz-stats.ts` (pure score/weak-topic helpers), `lib/quiz-sources.ts` (group notes by subject), `lib/hash.ts` (shared content hash, podcast re-exports), `store/use-quiz-store.ts`, and DB `quizzes` (cache, keyed by subject) + `quiz_results` (history) tables. Quiz Home lists the student's **subjects/courses** (grouped from their notes); tapping one generates a quiz **grounded in all that subject's notes** (each question tagged "From your notes · subject" + a concept `topic`), cached per subject+content-hash so a retake replays free. The Active screen runs one MCQ per screen with green/red feedback; finishing scores it, persists a `quiz_results` row, and navigates to the result (ring gauge + weak-topic chips + a **wrong-answer review** showing the correct option and a short grounded "why" per miss — the explanation is generated inline with the questions, no extra call). The Dashboard's Quiz Score stat + Weak Topics preview read real results. Decisions: quiz list is **by subject** (user request) not per-note; every question still comes only from the student's own notes; dropped the mock "Mixed" card; flashcards deferred (runner is MCQ). No new BTL test call spent — request shape reuses the podcast's live-verified plain-JSON approach. lint + typecheck green._
+Candidate directions (pick ONE, Day 1, do not revisit):
 
-_Phase 7 done: `types/deadline.ts`, `lib/deadline-view.ts` (pure urgency/countdown/formatting + no-dep date/time choice lists), `lib/deadline-form.ts` (Add-form sheet resolver), `store/use-deadlines-store.ts`, and a `deadlines` SQLite table. Add Deadline saves a real deadline (date/time via no-dependency option-sheets — kept Expo-Go-friendly, no native picker). The Deadlines screen shows the current month with deadline days dotted + an Upcoming list with derived urgency colours, countdown copy, a reminder bell toggle, and long-press-to-delete. The Dashboard's "Upcoming Deadlines" preview reads the soonest few. Reminders are a **saved preference** (reminderOn + label); scheduling an OS notification is deferred — the user chose the dependency-free path (no `expo-notifications` install) to stay Expo-Go-compatible. lint + typecheck green._
+- **Make the refusal generative.** When the notes don't cover something, don't just decline — tell the student _what's missing from their notes_. "Your notes cover glycolysis but never mention the electron transport chain — and your exam is in 4 days." That turns a refusal into the most useful thing in the app: **a gap report on your own revision.**
+- **Grade the notes, not the student.** Analyse the full corpus and show coverage against their course — which lectures are thin, which are missing entirely.
+- **Adversarial quiz.** Generate questions specifically targeting the weak topics _and_ the gaps.
 
-_Phase 8 (in progress) — Upload extraction: `lib/docx-extract.ts` (jszip unzips the .docx and converts `word/document.xml` <w:t> runs to plain text — **fully on-device, zero BTL credits**; handles adjacent runs, tabs, `<w:br>`/`<w:cr>`, named/decimal/hex XML entities, and drops `<w:instrText>` field codes + `<w:delText>` tracked deletions) and `lib/document-extract.ts` (orchestrator: routes each picked file — PDF→BTL vision, .docx→local — joined in pick order). `lib/files.ts` gained `isDocx` + `fileUriToBase64` (raw-base64 reader for jszip; `fileUriToDataUri` now delegates to it), and the Upload picker's `extractableOnly` accepts PDF + .docx. The Upload screen now extracts text from either format, summarizes it (best-effort BTL), and saves a real note. Verified the full jszip round-trip + parser against crafted XML (8/8 assertions). Installed `jszip@3.10.1` (user-approved). lint + typecheck green._
+The first one is the strongest: it is a **direct extension of the refusal**, it needs no new UI surface, and it makes our unique mechanic _productive_ rather than merely honest. It also uses GPT-5.6 for something non-obvious — reasoning about the _absence_ of information.
 
-_PDF Reader (Phase 8 add-on) — a note uploaded as a PDF now shows a **"PDF Reader"** button beside "Open Note" (Note Details) that renders the **original PDF exactly** via pdf.js 3.11.174 (UMD, from cdnjs) inside `react-native-webview` — Expo-Go-safe, no dev build (chose this over native `react-native-pdf`). The PDF bytes never leave the device (base64 via `lib/pdf-file.ts`, which also persists the file into `documentDirectory/pdfs`). Full **highlight + comment + broadcast** on the rendered page: annotations are geometry-based (normalized page rects, so they re-project at any zoom), stored in a new `notes.pdf_annotations` JSON column (`Note.pdfAnnotations`), and reuse `ReaderToolbar`/`HighlightPalette`/`CommentModal` + the podcast Listen route. New: `lib/pdf-reader-doc.ts` (WebView doc builder), `data/pdf-annotations.ts`, `components/note/pdf-reader-{view,webview,button}.tsx`, `app/note/[id]/pdf.tsx`. Verified render + both annotation round-trips end-to-end in headless Chromium. lint + typecheck green._
+---
 
-_Phase 8 Record — audio transcription (2026-07-05): **BTL cannot transcribe audio** — verified live this session (three ways): `/v1/audio/transcriptions` is 404, `gpt-audio-mini`/`gpt-audio` 400 via the gateway, and `voxtral-small-24b-2507`'s chat `input_audio` tokenizes audio at ~32k tok/sec so its 32k context = **~1 second of audio max** (2s → 400 "too large for context"). So per the user's decision, **Record transcription runs through OpenAI Whisper directly** (`lib/transcription.ts` → multipart `POST /v1/audio/transcriptions`, model `whisper-1`, `response_format:'text'`), the one feature that does NOT route through BTL. It's Expo-Go-safe (plain `fetch`, no dev build) and needs `EXPO_PUBLIC_OPENAI_API_KEY` in `.env` (read only in transcription.ts; blank key → graceful manual transcript). The transcript is still summarized by **btl-2**, and Scan OCR still uses BTL vision (`gemini-2.5-flash`). Whisper request shape validated to 401 (endpoint/model/fields correct); full on-device run needs the key. Dead `DEFAULT_AUDIO_MODEL` removed from btl.ts. lint + typecheck green._
+## OpenAI API Rules (CRITICAL)
 
-**Next (Phase 9 — Settings + polish + submission):** model picker, empty-state/animation polish, README with the BTL endpoints used, 2-min demo video._
+All AI in the app goes through the **OpenAI API**, using **GPT-5.6**. This is the hackathon requirement: every submission must be built with Codex and GPT-5.6.
 
------
+> ### ⚠️ Model names and endpoints are NOT verified in this file
+>
+> GPT-5.6 shipped after this document's guidance was written. The model string, the realtime/audio
+> endpoints, and the exact request shapes **must be read from the live docs at
+> `platform.openai.com/docs` before writing the client.** Do not guess. Do not copy a model name from
+> memory. **Confirming the API surface is the first engineering task of M1.**
 
-## BTL Runtime Rules (CRITICAL)
+### What changed from the BTL runtime (and why it matters)
 
-All AI in the app goes through the **BTL Runtime** — Bad Theory Labs' OpenAI-compatible gateway. This is a hackathon requirement: **every submission must call the BTL runtime.** Never call another LLM provider directly; route everything through the gateway.
+The previous build was crippled by two gateway limitations that **no longer exist**:
 
-### Verified runtime facts (from https://runtime.badtheorylabs.com/docs — checked 2026-07-04)
+| Constraint under BTL                                                                                                                                                             | Status now                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No embedding model in the catalog** → we fell back to lexical keyword scoring for retrieval                                                                                    | **Gone.** OpenAI has text embeddings. **Build real vector RAG in M2.** This is a direct upgrade to Technological Implementation.                                        |
+| **No working audio path** → `/v1/audio/transcriptions` 404'd; voxtral's 32k context = ~1 second of audio; we routed Record to OpenAI Whisper directly as the one non-BTL feature | **Gone.** Transcription is native now. The awkward exception disappears — and `lib/transcription.ts` already talks to OpenAI, so this mostly just stops being a caveat. |
+| **~$0.50 of credits for the entire build**                                                                                                                                       | **$100** (request by July 17, 12pm PT; expires July 31).                                                                                                                |
 
-- **Base URL:** `https://api.badtheorylabs.com/v1` (env `EXPO_PUBLIC_BTL_BASE_URL`). It is an OpenAI-compatible drop-in — the `openai` JS client with the base URL swapped works.
-- **Auth:** `Authorization: Bearer <key>` (env `EXPO_PUBLIC_BTL_API_KEY`).
-- **Chat:** `/chat/completions` **or** `/responses` (both OpenAI-compatible), streaming supported. The dashboard's confirmed default model is **`btl-2`** — use it as `CHAT_MODEL`. A large aliased catalog also exists (300+ slugs at `/models`, e.g. `gpt-4.1-mini`, `claude-haiku-4-5`, `gemini-2.5-flash`); expose the choice in Settings later. Main rule from the dashboard: *every project must call the BTL runtime.*
-- **Vision (scan OCR):** vision-capable chat models exist (`qwen3-vl-*`, `gemini-2.5-flash-image`, `llama-3.2-11b-vision-instruct`). OCR = send the image to a vision chat model; there is **no** separate OCR endpoint.
-- **Audio (record transcription):** `gpt-audio` / `gpt-audio-mini` are listed — confirm the transcription request shape before relying on it, and keep a manual-edit transcript fallback.
-- **Embeddings ⚠️:** the catalog did **not** surface a dedicated text-embedding model. Verify one exists before building vector retrieval. **If none, ground retrieval lexically** (keyword/overlap scoring over note chunks) — the trust promise is preserved by the retrieval GATE + citations, not by vectors specifically. Never drop the grounding gate.
-- Response headers expose economics (`x-btl-request-id`, `x-btl-customer-charge`, `x-btl-saved`) — useful for the demo/README.
-- **⚠️ Credit budget: only ~$0.50 of runtime credits for the ENTIRE build + demo.** Study the docs to get request shapes right *before* spending a call; never spray test calls; use the cheapest model + short `max_tokens` when a test is unavoidable; cache/persist results in SQLite so nothing is embedded or answered twice.
+### Budget discipline (relaxed, not abolished)
 
-> The `CHAT_MODEL` / `EMBED_MODEL` names in the example below are placeholders — update them to what the catalog actually offers.
+$100 is ~200× the old budget, so the "never spray a test call" paranoia can ease. But:
+
+- **Embedding a large note corpus and running quizzes adds up.** Cache in SQLite so nothing is embedded or answered twice — the existing content-hash quiz cache is good engineering, keep it.
+- **Check the balance daily.** Running dry on July 20 ends us. **Credits expire July 31.**
+- Overage is charged to us personally. There is no free tier behind this.
+- The old rule "bias every should-we-call-AI decision toward **yes**" is **revoked** — it was chasing 30 rubric points that no longer exist, and now it costs money. New rule: **call GPT-5.6 where it is the right tool, and use it deeply.**
+
+### API Key Security (CRITICAL — stricter than before)
+
+The previous build embedded a _scoped_ key with $0.50 of credits — an acceptable risk. **That reasoning no longer holds.** We now have $100 on a personal account, and **the repo is public for judging.**
+
+- **Stand up a thin proxy** (one serverless route) that holds the key and forwards requests. ~1 hour with Codex.
+- `lib/ai.ts` points at the proxy. **The OpenAI key never ships in the React Native bundle.** Anyone can extract a key from a bundle.
+- No key in `.env` files that get committed. No key in logs. No key in the repo, ever.
+- Judges read repos. A key in the client reads as amateur _and_ can be drained.
 
 ### Client setup
 
-Store the scoped API key and base URL in env (`.env`, git-ignored). Read them **only** in `lib/btl.ts`.
-
 ```ts
-// lib/btl.ts
-import OpenAI from 'openai';
+// lib/ai.ts
+import OpenAI from "openai";
 
-export const btl = new OpenAI({
-  apiKey: process.env.EXPO_PUBLIC_BTL_API_KEY,          // scoped hackathon key — never commit
-  baseURL: process.env.EXPO_PUBLIC_BTL_BASE_URL,        // e.g. https://api.badtheorylabs.com/v1
+export const ai = new OpenAI({
+  baseURL: process.env.EXPO_PUBLIC_AI_PROXY_URL, // our proxy — holds the real key server-side
+  apiKey: "proxy", // placeholder; the proxy injects the real key
 });
 
-// Models are selectable in Settings and read from useSettingsStore.model.
-export const CHAT_MODEL = 'gpt-4o-mini';    // any provider behind the BTL gateway
-export const EMBED_MODEL = 'text-embedding-3-small';
+// ⚠️ VERIFY THESE AGAINST platform.openai.com/docs BEFORE USE — do not trust these strings.
+export const CHAT_MODEL = "<gpt-5.6-model-string>";
+export const EMBED_MODEL = "<embedding-model-string>";
 ```
-
-> **Key-security note:** a client-embedded key is only acceptable because the hackathon issues a
-> *scoped* key with limited free credits. If time allows, put a one-route proxy in front so the key
-> never ships in the app. Either way, the key is referenced in exactly one file.
 
 ### Grounded chat (the star feature)
 
@@ -885,48 +933,59 @@ Answers must come **only** from the student's retrieved notes. Retrieve first, t
 
 ```ts
 // lib/chat.ts
-import { btl, CHAT_MODEL } from './btl';
-import { retrieveTopK } from './retrieval';
+import { ai, CHAT_MODEL } from "./ai";
+import { retrieveTopK } from "./retrieval";
 
 export const askFromNotes = async (question: string) => {
-  const hits = await retrieveTopK(question, 4);      // top-K note chunks by cosine similarity
+  const hits = await retrieveTopK(question, 4); // top-K note chunks by cosine similarity
 
   if (hits.length === 0) {
-    return { grounded: false, content: "I don't have that in your notes yet.", citations: [] };
+    return {
+      grounded: false,
+      content: "I don't have that in your notes yet.",
+      citations: [],
+    };
   }
 
-  const context = hits.map((h, i) => `[${i + 1}] (${h.noteTitle})\n${h.text}`).join('\n\n');
+  const context = hits
+    .map((h, i) => `[${i + 1}] (${h.noteTitle})\n${h.text}`)
+    .join("\n\n");
 
-  const res = await btl.chat.completions.create({
+  const res = await ai.chat.completions.create({
     model: CHAT_MODEL,
     stream: true,
     messages: [
       {
-        role: 'system',
+        role: "system",
         content:
-          'You are AI University Companion. Answer ONLY using the provided notes. ' +
+          "You are readIQ. Answer ONLY using the provided notes. " +
           'If the notes do not contain the answer, say "I don\'t have that in your notes yet." ' +
-          'Never use outside knowledge. Never invent facts. Cite the note numbers you used.',
+          "Never use outside knowledge. Never invent facts. Cite the note numbers you used.",
       },
-      { role: 'user', content: `Notes:\n${context}\n\nQuestion: ${question}` },
+      { role: "user", content: `Notes:\n${context}\n\nQuestion: ${question}` },
     ],
   });
 
-  return { grounded: true, stream: res, citations: hits };   // citations → "📌 From your notes" tags
+  return { grounded: true, stream: res, citations: hits }; // citations → "📌 From your notes" tags
 };
 ```
 
-### BTL Rules Summary
+> **⚠️ A stronger model makes the grounding gate MORE important, not less.**
+> GPT-5.6 knows vastly more general knowledge than `btl-2`. It is far more capable of producing a
+> fluent, plausible, correct-sounding answer _without_ the notes — which is exactly the failure our
+> product exists to prevent. **Do not weaken the retrieval gate because the model got smarter.**
+> Re-test the refusal path explicitly after migration: ask something the notes don't cover and
+> confirm it still declines.
 
-- Every AI call goes through the BTL runtime. No direct third-party provider calls.
-- Use OpenAI-compatible endpoints: `/v1/chat/completions` (chat, quiz gen, OCR cleanup),
-  embeddings for retrieval, and audio/vision models for transcription and scan — all via the gateway.
+### API Rules Summary
+
+- All AI goes through the OpenAI API via our proxy. No key in the client.
 - Use `stream: true` for chat so answers feel fast.
-- The scoped API key is read only in `lib/btl.ts`, from an env var, and is never committed or logged.
 - Chat, quiz, OCR, and transcription models are user-selectable in Settings → AI Model.
-- Show a friendly error if the runtime is unreachable or credits are exhausted — never a raw stack trace.
+- Show a friendly error if the API is unreachable or credits are exhausted — never a raw stack trace.
+- **Verify every endpoint and model string against live docs before use.**
 
------
+---
 
 ## Retrieval & Grounding Rules (RAG — the trust engine)
 
@@ -935,21 +994,22 @@ The promise "answers only from your notes" is delivered by retrieval, not by hop
 Flow:
 
 1. On save, split a note into small overlapping chunks (`lib/retrieval.ts`)
-1. Embed each chunk via the BTL runtime (`lib/embeddings.ts`) and store the vector in SQLite
-1. On a question, embed the query and rank chunks by cosine similarity — take top-K
-1. If **no chunk clears the similarity threshold**, do **not** call the model — return the honest fallback: *"I don't have that in your notes yet."* with an "Add a note" action
+1. **Embed each chunk via the OpenAI embeddings API** (`lib/embeddings.ts`) and store the vector in SQLite
+1. On a question, embed the query and rank chunks by **cosine similarity** — take top-K
+1. If **no chunk clears the similarity threshold**, do **not** call the model — return the honest fallback: _"I don't have that in your notes yet."_ with an "Add a note" action
 1. Otherwise pass only the retrieved chunks as context and generate the answer
 1. Return the source notes as `citations` → rendered as "📌 From your notes: <title>" tags, each tappable to open the note
 
 Implementation rules:
 
-- Retrieval is the gate. An answer is only shown as grounded when real chunks backed it.
+- **Retrieval is the gate.** An answer is only shown as grounded when real chunks backed it.
+- **Tune the threshold deliberately in M2 and write down the number and why.** Too low → we hallucinate and lose the product. Too high → we refuse everything and look broken. This tuning is a genuine engineering contribution and belongs in the README.
 - Quiz questions are generated from retrieved note chunks too — every question carries its `sourceNoteId`.
 - Keep chunks small (a few sentences) with light overlap so citations point to a precise place.
-- Never let the model answer from general knowledge. The system prompt forbids it *and* retrieval enforces it.
+- Never let the model answer from general knowledge. The system prompt forbids it _and_ retrieval enforces it.
 - Store embeddings locally (SQLite) so retrieval is instant and works offline for already-saved notes.
 
------
+---
 
 ## Database Rules
 
@@ -957,12 +1017,13 @@ Use `expo-sqlite` only for structured local data.
 
 ```sql
 CREATE TABLE IF NOT EXISTS notes (
-  id         TEXT PRIMARY KEY,
-  title      TEXT NOT NULL,
-  subject    TEXT,
-  content    TEXT NOT NULL,
-  source     TEXT NOT NULL,   -- "paste" | "file" | "scan" | "voice"
-  created_at TEXT NOT NULL
+  id               TEXT PRIMARY KEY,
+  title            TEXT NOT NULL,
+  subject          TEXT,
+  content          TEXT NOT NULL,
+  source           TEXT NOT NULL,   -- "paste" | "file" | "scan" | "voice"
+  pdf_annotations  TEXT,            -- JSON array of geometry-based annotations
+  created_at       TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS note_chunks (
@@ -981,6 +1042,13 @@ CREATE TABLE IF NOT EXISTS deadlines (
   reminder_on INTEGER NOT NULL DEFAULT 0   -- 0 | 1
 );
 
+CREATE TABLE IF NOT EXISTS quizzes (
+  id           TEXT PRIMARY KEY,
+  subject      TEXT NOT NULL,
+  content_hash TEXT NOT NULL,   -- cache key: subject + note content
+  questions    TEXT NOT NULL    -- JSON
+);
+
 CREATE TABLE IF NOT EXISTS quiz_results (
   id          TEXT PRIMARY KEY,
   created_at  TEXT NOT NULL,
@@ -992,7 +1060,23 @@ CREATE TABLE IF NOT EXISTS quiz_results (
 
 All DB calls go through `lib/db.ts`. No raw SQL in screens or components.
 
------
+---
+
+## The Codex Log (REQUIRED — this is scored)
+
+Build Week rules require the README to describe **how we collaborated with Codex** — where Codex accelerated the workflow, where **we** made the key product, engineering, and design decisions, and how GPT-5.6 and Codex shaped the result. The rules state this is an important part of how judges evaluate **Technological Implementation** and **Quality of the Idea**.
+
+**This is a scored artifact, not paperwork.** A README written on Day 6 from memory will be generic and will score badly.
+
+### Therefore, from Day 1:
+
+1. **Maintain `NOTES.md`.** After every feature, append: what Codex did well, where we overrode it, what we decided and why. The existing per-phase notes in this file are exactly the right texture — that habit is already good, keep it.
+2. **Commit granularly and often.** Dated commit history is evidence.
+3. **Keep Codex session logs.** Save them.
+4. **Record the decisions, not just the code.** The threshold tuning in M2, the choice of M3, the decision to proxy the key, the choice to keep local .docx extraction — those are _our_ judgment, and the rules specifically ask where the human made the calls.
+5. **Be honest about what Codex did.** Judges can tell. Overclaiming and underclaiming both read badly.
+
+---
 
 ## Linting and Validation
 
@@ -1005,7 +1089,7 @@ npm run typecheck
 
 Fix all errors before considering a feature complete.
 
------
+---
 
 ## Communication Style
 
@@ -1015,12 +1099,12 @@ When a phase is complete state clearly:
 
 > "Phase [N] is complete. Here is how to test it: …"
 
------
+---
 
 ## Important Constraints
 
-- All AI must go through the **BTL runtime** (hackathon requirement) — no direct third-party provider calls
-- The scoped API key is read only in `lib/btl.ts`, from an env var, and is never committed or logged
+- All AI goes through the **OpenAI API** using **GPT-5.6** (hackathon requirement)
+- **The API key never ships in the app** — it lives behind our proxy, server-side, and is never committed or logged
 - No answer may come from outside the student's saved notes (retrieval-gated grounding)
 - No separate auth service (Clerk, Firebase, etc.) for the hackathon build
 - No analytics or crash reporting that ships note content off device
@@ -1030,25 +1114,25 @@ Use:
 - SQLite for notes, chunks/embeddings, deadlines, and quiz history
 - AsyncStorage for profile, settings, and theme preference
 - Zustand for app state
-- BTL runtime for all AI (chat, embeddings, retrieval, OCR, transcription)
+- OpenAI API for all AI (chat, embeddings, retrieval, vision OCR, transcription)
 
------
+---
 
 ## Trust & Grounding Rules (NON-NEGOTIABLE)
 
-AI University Companion promises it **only answers from the student's own notes and never invents anything**. This is the emotional core of the product — protect it in every feature.
+readIQ promises it **only answers from the student's own notes and never invents anything**. This is the emotional core of the product **and our entire competitive claim** — protect it in every feature.
 
 - Never answer a question that retrieval could not ground in a saved note. Show the honest fallback instead.
 - Every grounded answer must display its source via the "📌 From your notes" tag.
-- Never let the model use outside/general knowledge to fill gaps.
-- Note content **is** sent to the BTL runtime to be embedded, retrieved, and answered — be honest about this in copy. Notes are stored locally as the source of truth; only what's needed is sent to the runtime. (This app is cloud-AI via BTL, unlike a fully on-device build.)
+- Never let the model use outside/general knowledge to fill gaps. **GPT-5.6 is much better at plausibly filling gaps than our previous model — this raises the stakes.**
+- Note content **is** sent to the OpenAI API to be embedded, retrieved, and answered — be honest about this in copy. Notes are stored locally as the source of truth; only what's needed is sent.
 - Never log note content or the API key to any external service.
 
 If a feature would let the app answer without a grounding note, stop and ask:
 
 > "This would let the app answer from outside the student's notes, which breaks the trust promise. Can we gate it behind retrieval and show a citation instead?"
 
------
+---
 
 ## Final Reminder
 
@@ -1060,4 +1144,5 @@ Before every feature implementation:
 - Screen files max 150 lines. Component files max 200 lines.
 - Never hardcode hex colors — always use `colors.X` from `useTheme()`
 - Replicate UI exactly when designs are provided — match both light and dark modes
-- Route all AI through the BTL runtime, and never show an answer that retrieval could not ground in a real note
+- Route all AI through the OpenAI API via the proxy, and never show an answer that retrieval could not ground in a real note
+- **Append to `NOTES.md` — the Codex log is scored**

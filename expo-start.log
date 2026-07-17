@@ -1,0 +1,41 @@
+Starting project at C:\Users\USER\Documents\Hacks\Read-iq
+Starting Metro Bundler
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8082
+Logs for your project will appear below.
+Web node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundling failed 3287ms node_modules\expo-router\entry.js (719 modules)
+
+Metro error: Unable to resolve module ../constants/colors from C:\Users\USER\Documents\Hacks\Read-iq\hooks\use-theme.tsx: 
+
+None of these files exist:
+  * constants\colors(.web.ts|.ts|.web.tsx|.tsx|.web.mjs|.mjs|.web.js|.js|.web.jsx|.jsx|.web.json|.json|.web.cjs|.cjs|.web.scss|.scss|.web.sass|.sass|.web.css|.css)
+  * constants\colors
+[0m [90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { createContext[33m,[39m useContext[33m,[39m useMemo[33m,[39m useState } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m 2 |[39m [36mimport[39m { useColorScheme } [36mfrom[39m [32m'react-native'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { darkColors[33m,[39m lightColors } [36mfrom[39m [32m'../constants/colors'[39m[33m;[39m
+ [90m   |[39m                                          [31m[1m^[22m[39m
+ [90m 4 |[39m
+ [90m 5 |[39m type [33mThemeContextValue[39m [33m=[39m { colors[33m:[39m [36mtypeof[39m lightColors[33m;[39m dark[33m:[39m boolean[33m;[39m toggle[33m:[39m () [33m=>[39m [36mvoid[39m }[33m;[39m
+ [90m 6 |[39m [36mconst[39m [33mThemeContext[39m [33m=[39m createContext[33m<[39m[33mThemeContextValue[39m[33m>[39m({ colors[33m:[39m lightColors[33m,[39m dark[33m:[39m [36mfalse[39m[33m,[39m toggle[33m:[39m () [33m=>[39m {} })[33m;[39m[0m
+
+Import stack:
+
+ hooks\use-theme.tsx
+ | import "../constants/colors"
+
+ app\_layout.tsx
+ | import "../hooks/use-theme"
+
+ app (require.context)
+
+
+Call Stack
+  <unknown> (hooks\use-theme.tsx)
+λ Bundling failed 3333ms node_modules\expo-router\node\render.js (796 modules)
+Tunnel connected.
+Tunnel connected.
+Tunnel connected.
+Tunnel connected.
+Tunnel connected.
