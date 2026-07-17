@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { BtlError } from '@/lib/btl';
+import { AiError } from '@/lib/ai';
 import { summarizeNoteText } from '@/lib/summarize';
 
 export type ExtractionState = 'reading' | 'summarizing' | 'ready' | 'error';
@@ -44,7 +44,7 @@ export function useMediaExtraction(
     try {
       result = (await run(uri)).trim();
     } catch (err) {
-      setError(err instanceof BtlError ? err.friendly : fallbackError);
+      setError(err instanceof AiError ? err.friendly : fallbackError);
       setStatus('error');
       return;
     }

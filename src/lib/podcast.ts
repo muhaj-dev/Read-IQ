@@ -12,7 +12,7 @@
 import { getChatModel } from '@/store/use-settings-store';
 import { HOSTS, type PodcastCoverage, type PodcastTurn } from '@/types/podcast';
 
-import { btlPost } from './btl';
+import { aiPost } from './ai';
 import { hashContent } from './hash';
 
 // Re-exported so existing importers keep working now that hashContent moved to lib/hash.
@@ -260,7 +260,7 @@ async function generateSegment(
   total: number,
 ): Promise<{ title: string; turns: PodcastTurn[] }> {
   // Plain chat + robust parser, not a `response_format` field (unverified here, could 400).
-  const res = await btlPost<ChatCompletion>('chat/completions', {
+  const res = await aiPost<ChatCompletion>('chat/completions', {
     model: getChatModel(),
     temperature: 0.6, // warmer than Ask — the hosts should sound alive, not clinical
     max_tokens: total === 1 ? SINGLE_MAX_TOKENS : SEGMENT_MAX_TOKENS,

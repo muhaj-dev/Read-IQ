@@ -3,7 +3,7 @@
 // becomes the note body. Temperature 0 for a faithful, verbatim transcription.
 // Runs once per capture (spends credits); the result is saved to a note.
 
-import { btlPost, DEFAULT_VISION_MODEL, readChatText } from './btl';
+import { aiPost, DEFAULT_VISION_MODEL, readChatText } from './ai';
 import { fileUriToDataUri } from './files';
 
 const OCR_PROMPT =
@@ -27,7 +27,7 @@ function imageMime(uri: string): string {
 export async function extractImageText(uri: string): Promise<string> {
   const dataUri = await fileUriToDataUri(uri, imageMime(uri));
 
-  const res = await btlPost('chat/completions', {
+  const res = await aiPost('chat/completions', {
     model: DEFAULT_VISION_MODEL,
     temperature: 0,
     max_tokens: 4000,

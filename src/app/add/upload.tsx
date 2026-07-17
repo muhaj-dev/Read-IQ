@@ -7,7 +7,7 @@ import { ExtractStatus } from '@/components/add/extract-status';
 import { NoteForm } from '@/components/note/note-form';
 import { emptyNoteDraft } from '@/data/note-detail';
 import { useTheme } from '@/hooks/use-theme';
-import { BtlError } from '@/lib/btl';
+import { AiError } from '@/lib/ai';
 import { extractDocumentsText, isExtractable } from '@/lib/document-extract';
 import { pickFileAttachments } from '@/lib/files';
 import { plainTextToHtml } from '@/lib/rich-text';
@@ -41,8 +41,8 @@ export default function UploadScreen() {
       text = await extractDocumentsText(files);
       console.log('[upload] extracted text length:', text.length);
     } catch (err) {
-      console.warn('[upload] extraction threw:', err instanceof BtlError ? `${err.kind}: ${err.message}` : err);
-      setError(err instanceof BtlError ? err.friendly : 'We could not read the text from that file.');
+      console.warn('[upload] extraction threw:', err instanceof AiError ? `${err.kind}: ${err.message}` : err);
+      setError(err instanceof AiError ? err.friendly : 'We could not read the text from that file.');
       setStatus('error');
       return;
     }

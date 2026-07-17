@@ -3,7 +3,7 @@
 
 import { getChatModel } from '@/store/use-settings-store';
 
-import { btlPost } from './btl';
+import { aiPost } from './ai';
 
 type ChatResponse = {
   choices?: { message?: { content?: string } }[];
@@ -23,7 +23,7 @@ export async function summarizeNoteText(content: string): Promise<string> {
   const text = content.trim();
   if (!text) return '';
 
-  const res = await btlPost<ChatResponse>('chat/completions', {
+  const res = await aiPost<ChatResponse>('chat/completions', {
     model: getChatModel(),
     temperature: 0.2,
     max_tokens: 180,

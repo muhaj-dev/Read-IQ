@@ -14,7 +14,7 @@ import { useNotesStore } from '@/store/use-notes-store';
 import type { Note } from '@/types/note';
 import type { NoteChunk, RetrievalHit, StoredChunk } from '@/types/retrieval';
 
-import { btlEmbed, isBtlConfigured } from './btl';
+import { aiEmbed, isAiConfigured } from './ai';
 import { chunkNote, cosineSimilarity, noteSearchableText } from './chunk';
 import { getAllNoteChunks } from './db';
 import { hashContent } from './hash';
@@ -141,11 +141,11 @@ export function lexicalTopK(query: string, notes: Note[], k = 4): RetrievalHit[]
  *  where [] is the honest "not in your notes". Notes not yet freshly embedded are
  *  covered lexically so a real note is never invisible during the embed window. */
 async function vectorTopK(query: string, notes: Note[], k: number): Promise<RetrievalHit[] | null> {
-  if (!isBtlConfigured()) return null;
+  if (!isAiConfigured()) return null;
 
   let queryVec: number[];
   try {
-    [queryVec] = await btlEmbed([query]);
+    [queryVec] = await aiEmbed([query]);
   } catch {
     return null; // offline / credits / server → lexical fallback
   }

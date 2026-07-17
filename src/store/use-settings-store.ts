@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
 import { isKnownModel } from '@/data/ai-models';
-import { DEFAULT_CHAT_MODEL } from '@/lib/btl';
+import { DEFAULT_CHAT_MODEL } from '@/lib/ai';
 
 const STORAGE_KEY = 'app_settings';
 

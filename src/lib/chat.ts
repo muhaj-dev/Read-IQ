@@ -7,7 +7,7 @@ import { getChatModel } from '@/store/use-settings-store';
 import type { Citation } from '@/types/chat';
 import type { RetrievalHit } from '@/types/retrieval';
 
-import { btlChatStream, btlPost, BtlError } from './btl';
+import { aiChatStream, aiPost, AiError } from './ai';
 import { retrieveTopK } from './retrieval';
 
 /** The decline sentence — used identically as prompt instruction, fallback, and detector. */
@@ -121,8 +121,8 @@ function chatRequest(messages: ChatMsg[]): Record<string, unknown> {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** A transient failure worth retrying (5xx or dropped connection), unlike auth/credits. */
-function isTransient(err: unknown): err is BtlError {
-  return err instanceof BtlError && (err.kind === 'server' || err.kind === 'network');
+function isTransient(err: unknown): err is AiError {
+  return err instanceof AiError && (err.kind === 'server' || err.kind === 'network');
 }
 
 /** Answer a prepared request: attempt 1 streams; a pre-token transient failure
@@ -141,11 +141,11 @@ async function generateAnswer(
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       if (attempt === 0) {
-        const { text, finishReason, tokens } = await btlChatStream(request, emit, signal);
+        const { text, finishReason, tokens } = await aiChatStream(request, emit, signal);
         const content = text.trim();
         return { content, truncated: isTruncated(content, finishReason, tokens) };
       }
-      const res = await btlPost<ChatCompletion>('chat/completions', request, signal);
+      const res = await aiPost<ChatCompletion>('chat/completions', request, signal);
       const choice = res.choices?.[0];
       const content = (choice?.message?.content ?? '').trim();
       return { content, truncated: isTruncated(content, choice?.finish_reason ?? null) };

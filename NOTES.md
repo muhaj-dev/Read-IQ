@@ -1,5 +1,7 @@
 # Codex build notes
 
+- 2026-07-17 — Began M1 client migration: added the OpenAI proxy transport, switched chat, vision, quiz, summary, embeddings, and audio transcription away from BTL/client-held keys, while preserving the retrieval gate and streamed chat path.
+
 - 2026-07-17 — Added a key-safe `GET /api/ai` health check to the Vercel proxy so deployment and server-side configuration can be confirmed from a browser without making a model request.
 
 - 2026-07-17 — Chose a small Vercel proxy for the OpenAI migration so the API key stays server-side. Added an allowlisted, dependency-free proxy scaffold; the user will deploy it from the `server` root directory before the Expo client is migrated to its URL.

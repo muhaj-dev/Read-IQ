@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 
-import { BtlError } from '@/lib/btl';
+import { AiError } from '@/lib/ai';
 import { getPodcastEpisode, savePodcastEpisode } from '@/lib/db';
 import { generateEpisodeScript, hashContent } from '@/lib/podcast';
 import type { Note } from '@/types/note';
@@ -82,7 +82,7 @@ export const usePodcastStore = create<PodcastState>((set, get) => ({
         status: setNoteState(s.status, note.id, 'ready'),
       }));
     } catch (err) {
-      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      const friendly = err instanceof AiError ? err.friendly : GENERIC_ERROR;
       set((s) => ({
         status: setNoteState(s.status, note.id, 'error'),
         error: setNoteState(s.error, note.id, friendly),

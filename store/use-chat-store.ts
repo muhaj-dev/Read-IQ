@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 
 import { buildImageNoteInput, inferTopic } from '@/lib/ask-image';
-import { BtlError } from '@/lib/btl';
+import { AiError } from '@/lib/ai';
 import {
   answerBeyondNotes,
   answerImageGrounded,
@@ -206,7 +206,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Only a real, note-backed answer counts toward the Dashboard's stat.
       if (settled.grounded && !settled.error) void useUserStore.getState().incrementAiAnswers();
     } catch (err) {
-      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      const friendly = err instanceof AiError ? err.friendly : GENERIC_ERROR;
       settled = { ...aiMsg, content: friendly, streaming: false, error: true };
       patchAi(settled);
     } finally {
@@ -277,7 +277,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
       settled = { ...ansMsg, content: result.content, citations, streaming: false };
     } catch (err) {
-      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      const friendly = err instanceof AiError ? err.friendly : GENERIC_ERROR;
       settled = { ...ansMsg, content: friendly, streaming: false, fromImage: false, error: true };
     } finally {
       set({ sending: false });
@@ -390,7 +390,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       settled = { ...beyondMsg, content: result.content, truncated: false, streaming: false };
       patchBeyond(settled);
     } catch (err) {
-      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      const friendly = err instanceof AiError ? err.friendly : GENERIC_ERROR;
       // An error bubble isn't a "beyond" answer — clear the flag so it renders as a plain error.
       settled = { ...beyondMsg, content: friendly, streaming: false, beyond: false, error: true };
       patchBeyond(settled);

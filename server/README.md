@@ -15,6 +15,7 @@ Add these in **Project Settings → Environment Variables**:
 OPENAI_API_KEY=...
 OPENAI_CHAT_MODEL=gpt-5.6
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_TRANSCRIPTION_MODEL=whisper-1
 ```
 
 The Expo app receives only the deployed URL through `EXPO_PUBLIC_AI_PROXY_URL`.

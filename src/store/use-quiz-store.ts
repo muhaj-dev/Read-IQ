@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 
-import { BtlError } from '@/lib/btl';
+import { AiError } from '@/lib/ai';
 import { getQuiz, insertQuizResult, listQuizResults, saveQuiz } from '@/lib/db';
 import { hashContent } from '@/lib/hash';
 import { generateQuiz, shuffleQuestionOptions } from '@/lib/quizgen';
@@ -171,7 +171,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       }
       set({ current: quiz, status: 'ready' });
     } catch (err) {
-      const friendly = err instanceof BtlError ? err.friendly : GENERIC_ERROR;
+      const friendly = err instanceof AiError ? err.friendly : GENERIC_ERROR;
       set({ status: 'error', error: friendly });
     }
   },

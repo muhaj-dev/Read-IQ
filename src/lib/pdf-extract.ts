@@ -6,8 +6,8 @@
 
 import type { NoteAttachment } from '@/types/note';
 
-import { btlPost, DEFAULT_DOC_MODEL } from './btl';
-import { fileUriToDataUri, isPdf } from './files';
+import { aiPost, DEFAULT_DOC_MODEL } from './ai';
+import { fileUriToBase64, isPdf } from './files';
 
 // The gateway returns text in several shapes depending on the upstream model —
 // read all of them so a shape mismatch doesn't look like "the PDF had no text".
@@ -43,28 +43,26 @@ const EXTRACT_PROMPT =
 export async function extractPdfText(attachment: NoteAttachment): Promise<string> {
   // Force application/pdf — a cached file's blob type is unreliable on RN and a
   // wrong type makes the runtime return no text (the "no content yet" bug).
-  const dataUri = await fileUriToDataUri(attachment.uri, 'application/pdf');
+  const fileData = await fileUriToBase64(attachment.uri);
   console.log(
     '[pdf-extract] model:',
     DEFAULT_DOC_MODEL,
     '· dataUri prefix:',
-    dataUri.slice(0, 40),
+    fileData.slice(0, 40),
     '· base64 length:',
-    dataUri.length,
+    fileData.length,
   );
 
-  const res = await btlPost<ChatResponse>('chat/completions', {
+  const res = await aiPost<ChatResponse>('responses', {
     model: DEFAULT_DOC_MODEL,
     temperature: 0,
-    max_tokens: 8000,
-    messages: [
+    max_output_tokens: 8000,
+    input: [
       {
         role: 'user',
         content: [
-          { type: 'text', text: EXTRACT_PROMPT },
-          // Same proven content-part as scan OCR; the data-URI's application/pdf
-          // mime rides through so the gateway forwards it to Gemini as a document.
-          { type: 'image_url', image_url: { url: dataUri } },
+          { type: 'input_text', text: EXTRACT_PROMPT },
+          { type: 'input_file', filename: attachment.name, file_data: fileData },
         ],
       },
     ],

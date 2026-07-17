@@ -10,7 +10,7 @@
 import type { Note } from '@/types/note';
 import type { StoredChunk } from '@/types/retrieval';
 
-import { btlEmbed, isBtlConfigured } from './btl';
+import { aiEmbed, isAiConfigured } from './ai';
 import { chunkNote, noteSearchableText } from './chunk';
 import { deleteNoteChunks, getNoteChunkHashes, replaceNoteChunks } from './db';
 import { hashContent } from './hash';
@@ -29,11 +29,11 @@ export async function embedAndStoreNote(note: Note): Promise<boolean> {
     await deleteNoteChunks(note.id).catch(() => {});
     return true;
   }
-  if (!isBtlConfigured()) return false;
+  if (!isAiConfigured()) return false;
 
   let vectors: number[][];
   try {
-    vectors = await btlEmbed(chunks.map((c) => c.text));
+    vectors = await aiEmbed(chunks.map((c) => c.text));
   } catch {
     return false; // offline / credits / server → leave lexical to cover this note
   }
@@ -58,7 +58,7 @@ export async function embedAndStoreNote(note: Note): Promise<boolean> {
  *  changed since it was embedded). Runs once on app launch; sequential to avoid a
  *  burst of calls, and fully guarded so a failure just leaves lexical to cover it. */
 export async function syncNoteEmbeddings(notes: Note[]): Promise<void> {
-  if (!isBtlConfigured() || notes.length === 0) return;
+  if (!isAiConfigured() || notes.length === 0) return;
 
   let have: Map<string, string>;
   try {
@@ -71,6 +71,6 @@ export async function syncNoteEmbeddings(notes: Note[]): Promise<void> {
   for (const note of stale) {
     const ok = await embedAndStoreNote(note);
     // Stop early if embeddings have gone unavailable — the rest stays on lexical.
-    if (!ok && !isBtlConfigured()) break;
+    if (!ok && !isAiConfigured()) break;
   }
 }

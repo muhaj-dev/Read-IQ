@@ -5,7 +5,7 @@
 import { getChatModel } from '@/store/use-settings-store';
 import type { QuizOption, QuizQuestion } from '@/types/quiz';
 
-import { btlPost } from './btl';
+import { aiPost } from './ai';
 
 /** Fallback question target when a caller doesn't ask for a specific count. */
 const DEFAULT_TARGET = 10;
@@ -200,7 +200,7 @@ export async function generateQuiz(
   const maxTokens = Math.min(MAX_OUTPUT_TOKENS, count * TOKENS_PER_QUESTION + 300);
 
   // Plain chat + robust parser, not a `response_format` field (unverified here).
-  const res = await btlPost<ChatCompletion>('chat/completions', {
+  const res = await aiPost<ChatCompletion>('chat/completions', {
     model: getChatModel(),
     // Low for accuracy; a re-attempt lifts it to explore different corners.
     temperature: avoid.length > 0 ? 0.6 : 0.3,
