@@ -3,6 +3,10 @@
 This folder is deployed as a separate Vercel project. It keeps `OPENAI_API_KEY`
 server-side and forwards only the OpenAI endpoints readIQ uses.
 
+After deployment, visit `/api/ai` in a browser. A successful health check returns
+`ok: true`; `configured: true` confirms that Vercel can read the secret without
+ever revealing it.
+
 ## Vercel environment variables
 
 Add these in **Project Settings → Environment Variables**:

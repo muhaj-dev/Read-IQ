@@ -6,7 +6,7 @@ const MAX_OUTPUT_TOKENS = 4000;
 
 function setCors(response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
@@ -40,6 +40,13 @@ export default async function handler(request, response) {
   setCors(response);
 
   if (request.method === 'OPTIONS') return response.status(204).end();
+  if (request.method === 'GET') {
+    return response.status(200).json({
+      ok: true,
+      service: 'readIQ OpenAI proxy',
+      configured: Boolean(process.env.OPENAI_API_KEY),
+    });
+  }
   if (request.method !== 'POST') return sendError(response, 405, 'Only POST requests are allowed.');
 
   const apiKey = process.env.OPENAI_API_KEY;
