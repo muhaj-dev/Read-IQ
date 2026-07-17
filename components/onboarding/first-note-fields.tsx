@@ -11,6 +11,8 @@ type Props = {
 };
 
 /** Onboarding First Note editor: optional save-name field above the paste box. */
+/** Onboarding First Note editor: optional save-name field above the paste box. */
+/** Onboarding First Note editor: optional save-name field above the paste box. */
 export function FirstNoteFields({ title, onTitleChange, note, onNoteChange }: Props) {
   return (
     <View className="flex-1 gap-3">
